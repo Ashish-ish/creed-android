@@ -1,0 +1,90 @@
+{
+  "project_info": {
+    "project_number": "681325169385",
+    "project_id": "creed-11c03",
+    "storage_bucket": "creed-11c03.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:681325169385:android:46dc223eb30c4e43657e78",
+        "android_client_info": {
+          "package_name": "com.creed.android"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "681325169385-haf00o2t1i6g7g2augmus59rg0564cma.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.creed.android",
+            "certificate_hash": "eda19a628a1f82b3566908e4c3f7a1dc3d1d9a4f"
+          }
+        },
+        {
+          "client_id": "681325169385-uce5tatac1nc9fok71g9qm75chhp7f88.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC0v5bis5Y_OZg_ijwHdwgU06y8W-V811E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "681325169385-uce5tatac1nc9fok71g9qm75chhp7f88.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "681325169385-ngd94gm54qc9gtt74fa604ma38rm4fkq.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.creed"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:681325169385:android:35da0b95488ea05c657e78",
+        "android_client_info": {
+          "package_name": "com.example.creed"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "681325169385-uce5tatac1nc9fok71g9qm75chhp7f88.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC0v5bis5Y_OZg_ijwHdwgU06y8W-V811E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "681325169385-uce5tatac1nc9fok71g9qm75chhp7f88.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "681325169385-ngd94gm54qc9gtt74fa604ma38rm4fkq.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.creed"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,0 +1,22 @@
+package com.creed.android
+
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import com.creed.android.theme.CreedTheme
+
+@Composable
+fun CreedApp(
+    content: @Composable () -> Unit
+) {
+    CreedTheme {
+        Surface(
+            modifier = Modifier.fillMaxSize(),
+            color = MaterialTheme.colorScheme.background
+        ) {
+            content()
+        }
+    }
+}
