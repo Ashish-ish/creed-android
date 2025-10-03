@@ -9,11 +9,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavHostController
+import com.creed.android.navigation.Navigator
 import com.creed.android.navigation.Route
 
 @Composable
-fun LocationPermissionScreen(navController: NavHostController) {
+fun LocationPermissionScreen(navigator: Navigator) {
     var isLoading by remember { mutableStateOf(false) }
     var showPermissionDeniedMessage by remember { mutableStateOf(false) }
 
@@ -69,9 +69,7 @@ fun LocationPermissionScreen(navController: NavHostController) {
                 // TODO: Request location permissions using Moko-Geo or expect/actual wrapper
                 // For now, simulate permission grant and navigate to main screen
                 isLoading = false
-                navController.navigate(Route.MainScreen.path) {
-                    popUpTo(Route.LocationPermission.path) { inclusive = true }
-                }
+                navigator.navigate(Route.MainScreen, true)
             },
             modifier = Modifier.fillMaxWidth(),
             enabled = !isLoading
@@ -92,9 +90,7 @@ fun LocationPermissionScreen(navController: NavHostController) {
             onClick = {
                 showPermissionDeniedMessage = true
                 // Navigate to main screen even without location permission
-                navController.navigate(Route.MainScreen.path) {
-                    popUpTo(Route.LocationPermission.path) { inclusive = true }
-                }
+                navigator.navigate(Route.MainScreen, true)
             }
         ) {
             Text("Skip for Now")

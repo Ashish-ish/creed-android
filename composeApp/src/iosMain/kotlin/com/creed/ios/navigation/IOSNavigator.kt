@@ -9,8 +9,15 @@ import com.creed.android.navigation.Route
 class IOSNavigator : Navigator {
     val backStack: SnapshotStateList<Route> = mutableStateListOf(Route.Splash)
 
-    override fun navigate(route: Route) {
+    override fun navigate(
+        route: Route,
+        clearBackStack: Boolean
+    ) {
         backStack.add(route)
+    }
+
+    override fun navigate(route: String, clearBackStack: Boolean) {
+        backStack.add(Route.ConstructRouter(route))
     }
 
     override fun goBack() {

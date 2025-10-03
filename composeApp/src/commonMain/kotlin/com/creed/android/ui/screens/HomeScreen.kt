@@ -15,14 +15,13 @@ import com.creed.android.navigation.Navigator
 import com.creed.android.navigation.Route
 import com.creed.android.ui.screens.home.FeaturedArenaUi
 import com.creed.android.ui.screens.home.HomeEvent
-import com.creed.android.ui.screens.home.HomeViewModel
 import com.creed.android.ui.screens.home.RecentStatus
 import com.creed.android.ui.screens.home.RecentUi
 import com.creed.android.ui.screens.home.SportChipUi
 import com.creed.android.ui.screens.home.SummaryState
 import com.creed.android.ui.screens.home.SummaryType
 import com.creed.android.ui.screens.home.UpcomingUi
-import com.creed.android.ui.screens.home.*
+import com.creed.android.vm.HomeViewModel
 import kotlinx.datetime.*
 import org.koin.compose.koinInject
 import kotlin.time.Clock
@@ -46,14 +45,17 @@ fun HomeScreen(
         // Sticky Top Bar
         TopAppBar(
             title = {
-                Column {
+                Column(
+                    verticalArrangement = Arrangement.Center,
+                    modifier = Modifier.fillMaxHeight()
+                ) {
                     Text(
                         text = state.greeting,
                         fontSize = 16.sp,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
                     )
                     Text(
-                        text = state.user?.firstName ?: "",
+                        text = state.user?.firstName ?: "User",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface

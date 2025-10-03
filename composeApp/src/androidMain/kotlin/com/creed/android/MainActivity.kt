@@ -4,8 +4,13 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.core.view.WindowCompat
 import com.creed.android.di.presentationModule
 import com.creed.android.navigation.CreedApp
 import com.creed.android.theme.CreedTheme
@@ -19,13 +24,22 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
+
+        // Ensure proper edge-to-edge handling
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+
         startKoin {
             androidContext(this@MainActivity)
             modules(dataModule, commonModule, androidModule, presentationModule)
         }
         setContent {
             CreedTheme {
-                CreedApp()
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background
+                ) {
+                    CreedApp()
+                }
             }
         }
     }

@@ -1,6 +1,9 @@
 package com.creed.android.navigation
 
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
@@ -22,14 +25,9 @@ import com.creed.android.ui.screens.SplashScreen
 @Composable
 fun CreedApp() {
     CreedTheme {
-        Surface(
-            modifier = Modifier.fillMaxSize(),
-            color = MaterialTheme.colorScheme.background
-        ) {
-            val navController = rememberNavController()
-            val navigator = AndroidNavigator(navController)
-            CreedNavHost(navController, navigator)
-        }
+        val navController = rememberNavController()
+        val navigator = AndroidNavigator(navController)
+        CreedNavHost(navController, navigator)
     }
 }
 
@@ -37,35 +35,74 @@ fun CreedApp() {
 fun CreedNavHost(navController: NavHostController, navigator: Navigator) {
     NavHost(
         navController = navController,
-        startDestination = Route.Splash.path
+        startDestination = Route.Splash.path,
+        modifier = Modifier.fillMaxSize()
     ) {
-        composable(Route.Splash.path) {
-            SplashScreen(navigator)
-        }
-        composable(Route.Login.path) {
-            LoginScreen(
-                navigator
-            )
-        }
-        composable(Route.ProfileCompletion.path) {
-            ProfileCompletionScreen(navigator)
-        }
-        composable(Route.LocationPermission.path) {
-            LocationPermissionScreen(navController)
-        }
-        composable(Route.MainScreen.path) {
-            MainScreen(navigator)
-        }
+        // Screens that should handle their own insets (like ArenaDetail with transparent top bar)
         composable(Route.ArenaDetail.path) { backStackEntry ->
             val arenaId = backStackEntry.arguments?.getString("arenaId") ?: ""
-            ArenaDetailScreen(navController, arenaId)
+            ArenaDetailScreen(navigator, arenaId)
+        }
+
+        // Screens that need system bar padding
+        composable(Route.Splash.path) {
+            Surface(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .windowInsetsPadding(WindowInsets.systemBars)
+            ) {
+                SplashScreen(navigator)
+            }
+        }
+        composable(Route.Login.path) {
+            Surface(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .windowInsetsPadding(WindowInsets.systemBars)
+            ) {
+                LoginScreen(navigator)
+            }
+        }
+        composable(Route.ProfileCompletion.path) {
+            Surface(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .windowInsetsPadding(WindowInsets.systemBars)
+            ) {
+                ProfileCompletionScreen(navigator)
+            }
+        }
+        composable(Route.LocationPermission.path) {
+            Surface(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .windowInsetsPadding(WindowInsets.systemBars)
+            ) {
+                LocationPermissionScreen(navigator)
+            }
+        }
+        composable(Route.MainScreen.path) {
+            // MainScreen handles its own insets with bottom navigation
+            MainScreen(navController)
         }
         composable(Route.SlotPicker.path) { backStackEntry ->
-            SlotPickerScreen(navController)
+            Surface(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .windowInsetsPadding(WindowInsets.systemBars)
+            ) {
+                SlotPickerScreen(navigator)
+            }
         }
         composable(Route.OrderConfirmation.path) { backStackEntry ->
             val bookingId = backStackEntry.arguments?.getString("bookingId") ?: ""
-            OrderConfirmationScreen(navController, bookingId)
+            Surface(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .windowInsetsPadding(WindowInsets.systemBars)
+            ) {
+                OrderConfirmationScreen(navigator, bookingId)
+            }
         }
     }
 }

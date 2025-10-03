@@ -7,7 +7,15 @@ import androidx.navigation.NavHostController
 class AndroidNavigator(private val navController: NavHostController) : Navigator {
     override fun navigate(route: Route, clearBackStack: Boolean) {
         navController.navigate(route.path) {
-            popUpTo(route.path) { inclusive = true }
+            if (clearBackStack)
+                popUpTo(route.path) { inclusive = true }
+        }
+    }
+
+    override fun navigate(route: String, clearBackStack: Boolean) {
+        navController.navigate(route) {
+            if (clearBackStack)
+                popUpTo(route) { inclusive = true }
         }
     }
 

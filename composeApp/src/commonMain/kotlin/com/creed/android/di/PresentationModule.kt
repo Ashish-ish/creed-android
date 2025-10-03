@@ -1,6 +1,6 @@
 package com.creed.android.di
 
-import com.creed.android.ui.screens.home.HomeViewModel
+import com.creed.android.vm.HomeViewModel
 import com.creed.android.vm.LoginViewModel
 import com.creed.android.vm.SplashViewModel
 import com.creed.android.vm.ProfileCompletionViewModel

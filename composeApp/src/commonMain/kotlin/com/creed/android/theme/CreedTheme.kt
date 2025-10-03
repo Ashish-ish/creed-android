@@ -54,8 +54,8 @@ val AppGradientBrush = Brush.verticalGradient(
         Color(0xFF8B7B9B), // Darker grayish-purple at very top
         Color(0xFF9B8BAB), // Slightly lighter grayish-purple
         Color(0xFFB39DDB), // Light purple
-        Color(0xFF9C7FD1), // Medium purple
-        Color(0xFF8E7CC3), // Slightly darker purple
+        Color(0xFFA58BCD), // Medium-light purple (softer than before)
+        Color(0xFFC7B9E6), // Pale lavender (smooth bridge to gray)
         Color(0xFFBDBDBD), // Light gray
         Color(0xFFE0E0E0), // Very light gray
         Color(0xFFF5F5F5)  // Almost white at bottom

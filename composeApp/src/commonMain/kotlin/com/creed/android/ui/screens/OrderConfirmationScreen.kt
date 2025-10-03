@@ -16,7 +16,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavHostController
+import com.creed.android.navigation.Navigator
 import com.creed.android.navigation.Route
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
@@ -24,7 +24,10 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun OrderConfirmationScreen(navController: NavHostController, bookingId: String) {
+fun OrderConfirmationScreen(
+    navigator: Navigator,
+    bookingId: String
+) {
     var isPaymentProcessing by remember { mutableStateOf(false) }
     var isPaymentComplete by remember { mutableStateOf(false) }
     var showSuccessAnimation by remember { mutableStateOf(false) }
@@ -60,7 +63,7 @@ fun OrderConfirmationScreen(navController: NavHostController, bookingId: String)
             title = { Text("Confirm Booking") },
             navigationIcon = {
                 IconButton(
-                    onClick = { navController.popBackStack() },
+                    onClick = { navigator.goBack() },
                     enabled = !isPaymentProcessing
                 ) {
                     Icon(Icons.Default.ArrowBack, contentDescription = "Back")
@@ -107,9 +110,7 @@ fun OrderConfirmationScreen(navController: NavHostController, bookingId: String)
 
                 Button(
                     onClick = {
-                        navController.navigate(Route.Bookings.path) {
-                            popUpTo(Route.MainScreen.path) { inclusive = false }
-                        }
+                        navigator.navigate(Route.Bookings, true)
                     },
                     modifier = Modifier.fillMaxWidth(0.8f)
                 ) {
@@ -118,9 +119,7 @@ fun OrderConfirmationScreen(navController: NavHostController, bookingId: String)
 
                 TextButton(
                     onClick = {
-                        navController.navigate(Route.Home.path) {
-                            popUpTo(Route.MainScreen.path) { inclusive = false }
-                        }
+                        navigator.navigate(Route.Home, true)
                     },
                     modifier = Modifier.padding(top = 8.dp)
                 ) {

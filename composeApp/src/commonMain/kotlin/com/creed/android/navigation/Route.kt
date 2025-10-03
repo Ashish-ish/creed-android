@@ -11,16 +11,17 @@ sealed class Route(val path: String) {
     object Bookings : Route("bookings")
     object Profile : Route("profileTab")
     object ArenaDetail : Route("arena/{arenaId}") {
-        fun create(arenaId: String) = Dynamic("arena/$arenaId")
+        fun create(arenaId: String) = "arena/$arenaId"
     }
     object SlotPicker : Route("arena/{arenaId}/sport/{sportId}/slots") {
-        fun create(arenaId: String, sportId: String) = Dynamic("arena/$arenaId/sport/$sportId/slots")
+        fun create(arenaId: String, sportId: String) = "arena/$arenaId/sport/$sportId/slots"
     }
     object OrderConfirmation : Route("confirmation/{bookingId}") {
-        fun create(bookingId: String) = Dynamic("confirmation/$bookingId")
+        fun create(bookingId: String) = "confirmation/$bookingId"
     }
 
-    data class Dynamic(private val fullPath: String) : Route(fullPath)
+    data class ConstructRouter(val route: String): Route(route)
+
 }
 
 // Bottom tab routes

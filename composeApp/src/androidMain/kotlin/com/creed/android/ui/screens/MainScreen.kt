@@ -8,17 +8,23 @@ import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.*
 import com.creed.android.navigation.BottomNavItem
-import com.creed.android.navigation.Navigator
+import com.creed.android.navigation.AndroidNavigator
 
 @Composable
-fun MainScreen(navigator: Navigator) {
+fun MainScreen(navController: NavHostController) {
     val bottomNavController = rememberNavController()
     val navBackStackEntry by bottomNavController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
+    val navigator = AndroidNavigator(navController)
 
     Scaffold(
+        modifier = Modifier
+            .fillMaxSize()
+            .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Top)),
         bottomBar = {
-            NavigationBar {
+            NavigationBar(
+                modifier = Modifier.windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Bottom))
+            ) {
                 BottomNavItem.entries.forEach { item ->
                     NavigationBarItem(
                         icon = {

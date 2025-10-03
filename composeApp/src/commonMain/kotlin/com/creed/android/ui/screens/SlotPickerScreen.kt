@@ -14,12 +14,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavHostController
+import com.creed.android.navigation.Navigator
 import com.creed.android.navigation.Route
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SlotPickerScreen(navController: NavHostController) {
+fun SlotPickerScreen(navigator: Navigator) {
     var selectedDateIndex by remember { mutableStateOf(0) }
     var selectedSlot by remember { mutableStateOf<MockSlot?>(null) }
     var selectedEquipment by remember { mutableStateOf<Map<String, Int>>(emptyMap()) }
@@ -69,7 +69,7 @@ fun SlotPickerScreen(navController: NavHostController) {
         TopAppBar(
             title = { Text("Select Time Slot") },
             navigationIcon = {
-                IconButton(onClick = { navController.popBackStack() }) {
+                IconButton(onClick = { navigator.goBack() }) {
                     Text("←") // Using text arrow instead of Icon
                 }
             }
@@ -193,7 +193,7 @@ fun SlotPickerScreen(navController: NavHostController) {
                         Button(
                             onClick = {
                                 // TODO: Create booking and navigate to order confirmation
-                                navController.navigate(Route.OrderConfirmation.create("booking123"))
+                                navigator.navigate(Route.OrderConfirmation.create("booking123"))
                             }
                         ) {
                             Text("Confirm Booking")
