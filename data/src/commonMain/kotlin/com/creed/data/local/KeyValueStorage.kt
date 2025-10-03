@@ -30,8 +30,8 @@ object StorageKeys {
     const val FIREBASE_TOKEN = "FIREBASE_TOKEN"
     const val AUTH_TOKEN = "AUTH_TOKEN"
     const val REFRESH_TOKEN = "REFRESH_TOKEN"
+    const val USER_ID = "USER_ID"
     const val USER_JSON = "USER_JSON"
     const val LOCATION_LAT = "LOCATION_LAT"
     const val LOCATION_LNG = "LOCATION_LNG"
 }
-

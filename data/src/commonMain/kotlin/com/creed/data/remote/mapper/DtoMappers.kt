@@ -30,3 +30,11 @@ fun EquipmentQuantity.toDto() = EquipmentQuantityDto(equipmentId, quantity)
 fun BookingRequest.toDto() = BookingRequestDto(arenaId, sportId, courtId, date, start, end, equipment.map { it.toDto() })
 fun Booking.toDto() = BookingDto(id, arena.toDto(), sport.toDto(), court.toDto(), date, start, end, equipment.map { it.toDto() })
 
+// Authentication mappers
+fun AuthTokensDto.toDomain() = AuthTokens(userId, authToken, refreshToken)
+fun UserExistsResponseDto.toDomain() = UserExistsResponse(exists)
+fun ProfileUpdateRequestDto.toDomain() = ProfileUpdateRequest(firstName, lastName, gender, dateOfBirth)
+
+fun AuthTokens.toDto() = AuthTokensDto(userId, authToken, refreshToken)
+fun UserExistsResponse.toDto() = UserExistsResponseDto(exists)
+fun ProfileUpdateRequest.toDto() = ProfileUpdateRequestDto(firstName, lastName, gender, dateOfBirth)

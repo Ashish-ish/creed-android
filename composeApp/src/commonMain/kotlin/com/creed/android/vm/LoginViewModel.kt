@@ -1,15 +1,16 @@
 package com.creed.android.vm
 
-import com.creed.android.platform.signInWithPhoneNumber
-import com.creed.android.platform.verifyCode
 import com.creed.domain.models.User
+import com.creed.usecase.AuthenticationUseCase
+import com.creed.usecase.LoginResult
 import kotlinx.coroutines.launch
 
 sealed class LoginState {
     object Idle : LoginState()
     object Loading : LoginState()
     data class OtpSent(val phone: String) : LoginState()
-    data class OtpVerified(val firebaseToken: String) : LoginState()
+    data class UserExists(val user: User) : LoginState()
+    object ProfileCompletionRequired : LoginState()
     data class Error(val message: String) : LoginState()
 }
 
@@ -19,51 +20,76 @@ sealed class LoginEffect {
     object NavigateToHome : LoginEffect()
 }
 
-class LoginViewModel : BaseViewModel<LoginState, LoginEffect>(LoginState.Idle) {
+class LoginViewModel(
+    private val authenticationUseCase: AuthenticationUseCase
+) : BaseViewModel<LoginState, LoginEffect>(LoginState.Idle) {
+
+    init {
+        checkExistingAuth()
+    }
+
+    private fun checkExistingAuth() {
+        viewModelScope.launch {
+            val isLoggedIn = authenticationUseCase.isUserLoggedIn()
+            if (isLoggedIn) {
+                val user = authenticationUseCase.getCurrentUser()
+                sendEffect(LoginEffect.NavigateToHome)
+            }
+        }
+    }
+
     fun sendOtp(phone: String) {
         setState { LoginState.Loading }
         viewModelScope.launch {
             try {
-                signInWithPhoneNumber(
-                    phone = "+91$phone",
-                    onCodeSent = {
-                        setState { LoginState.OtpSent(phone) }
-                    },
-                    onVerificationCompleted = { firebaseToken ->
-                        // Auto-verification completed
-                        setState { LoginState.OtpVerified(firebaseToken) }
-                        // TODO: Call backend API to register/login with firebaseToken
-                        sendEffect(LoginEffect.NavigateToProfileCompletion)
-                    },
-                    onError = { error ->
-                        setState { LoginState.Error("Failed to send OTP: $error") }
-                    }
-                )
+                val result = authenticationUseCase.requestOtp("+91$phone")
+                if (result.isSuccess) {
+                    setState { LoginState.OtpSent(phone) }
+                } else {
+                    setState { LoginState.Error("Failed to send OTP: ${result.exceptionOrNull()?.message}") }
+                }
             } catch (e: Exception) {
                 setState { LoginState.Error("Failed to send OTP: ${e.message}") }
             }
         }
     }
 
-    fun verifyOtp(otp: String) {
+    fun verifyOtp(phone: String, otp: String) {
         setState { LoginState.Loading }
         viewModelScope.launch {
             try {
-                verifyCode(
-                    code = otp,
-                    onSuccess = { firebaseToken ->
-                        setState { LoginState.OtpVerified(firebaseToken) }
-                        // TODO: Call backend API to register/login with firebaseToken
-                        // For now, navigate to profile completion
-                        sendEffect(LoginEffect.NavigateToProfileCompletion)
-                    },
-                    onError = { error ->
-                        setState { LoginState.Error("Invalid OTP: $error") }
+                val result = authenticationUseCase.verifyOtpAndLogin("+91$phone", otp)
+                if (result.isSuccess) {
+                    when (val loginResult = result.getOrThrow()) {
+                        is LoginResult.Success -> {
+                            val user = loginResult.user
+                            if (user != null) {
+                                setState { LoginState.UserExists(user) }
+                                sendEffect(LoginEffect.NavigateToHome)
+                            } else {
+                                // User exists but profile fetch failed, might need completion
+                                setState { LoginState.ProfileCompletionRequired }
+                                sendEffect(LoginEffect.NavigateToProfileCompletion)
+                            }
+                        }
+                        is LoginResult.ProfileCompletionRequired -> {
+                            setState { LoginState.ProfileCompletionRequired }
+                            sendEffect(LoginEffect.NavigateToProfileCompletion)
+                        }
                     }
-                )
+                } else {
+                    setState { LoginState.Error("OTP verification failed: ${result.exceptionOrNull()?.message}") }
+                }
             } catch (e: Exception) {
                 setState { LoginState.Error("Verification failed: ${e.message}") }
             }
+        }
+    }
+
+    fun logout() {
+        viewModelScope.launch {
+            authenticationUseCase.logout()
+            setState { LoginState.Idle }
         }
     }
 

@@ -2,6 +2,14 @@ package com.creed.usecase
 
 import com.creed.domain.repository.*
 
+class CheckUserExistsUseCase(private val authRepository: AuthRepository) {
+    suspend operator fun invoke(firebaseToken: String) = authRepository.checkUserExists(firebaseToken)
+}
+
+class LoginUserUseCase(private val authRepository: AuthRepository) {
+    suspend operator fun invoke(firebaseToken: String) = authRepository.loginUser(firebaseToken)
+}
+
 class RegisterUserUseCase(private val authRepository: AuthRepository) {
     suspend operator fun invoke(firebaseToken: String) = authRepository.registerUser(firebaseToken)
 }
@@ -11,7 +19,7 @@ class GetUserProfileUseCase(private val userRepository: UserRepository) {
 }
 
 class UpdateUserProfileUseCase(private val userRepository: UserRepository) {
-    suspend operator fun invoke(user: com.creed.domain.models.User) = userRepository.updateProfile(user)
+    suspend operator fun invoke(profileRequest: com.creed.domain.models.ProfileUpdateRequest) = userRepository.updateProfile(profileRequest)
 }
 
 class FetchNearbyArenasUseCase(private val arenaRepository: ArenaRepository) {

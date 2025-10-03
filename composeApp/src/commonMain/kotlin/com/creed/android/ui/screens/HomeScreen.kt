@@ -11,7 +11,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavHostController
+import com.creed.android.navigation.Navigator
 import com.creed.android.navigation.Route
 import com.creed.android.ui.screens.home.FeaturedArenaUi
 import com.creed.android.ui.screens.home.HomeEvent
@@ -31,7 +31,7 @@ import kotlin.time.ExperimentalTime
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun HomeScreen(
-    navController: NavHostController,
+    navigator: Navigator,
     viewModel: HomeViewModel = koinInject()
 ) {
     val state by viewModel.state.collectAsState()
@@ -166,7 +166,7 @@ fun HomeScreen(
                                 showViewAll = state.featured.firstOrNull()?.showViewAll == true,
                                 onArenaClick = { arenaId ->
                                     viewModel.onEvent(HomeEvent.OnArenaClick(arenaId))
-                                    navController.navigate(Route.ArenaDetail.create(arenaId))
+                                    navigator.navigate(Route.ArenaDetail.create(arenaId))
                                 },
                                 onViewAllClick = {
                                     viewModel.onEvent(HomeEvent.OnViewAllFeatured)

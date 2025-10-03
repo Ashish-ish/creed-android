@@ -14,12 +14,20 @@ class RegisterUserUseCase(private val authRepository: AuthRepository) {
     suspend operator fun invoke(firebaseToken: String) = authRepository.registerUser(firebaseToken)
 }
 
+class LoginUserUseCase(private val authRepository: AuthRepository) {
+    suspend operator fun invoke(firebaseToken: String) = authRepository.loginUser(firebaseToken)
+}
+
+class CheckUserExistsUseCase(private val authRepository: AuthRepository) {
+    suspend operator fun invoke(firebaseToken: String) = authRepository.checkUserExists(firebaseToken)
+}
+
 class GetUserProfileUseCase(private val userRepository: UserRepository) {
     suspend operator fun invoke() = userRepository.getProfile()
 }
 
 class UpdateUserProfileUseCase(private val userRepository: UserRepository) {
-    suspend operator fun invoke(user: com.creed.domain.models.User) = userRepository.updateProfile(user)
+    suspend operator fun invoke(profileRequest: com.creed.domain.models.ProfileUpdateRequest) = userRepository.updateProfile(profileRequest)
 }
 
 class FetchNearbyArenasUseCase(private val arenaRepository: ArenaRepository) {
@@ -53,4 +61,3 @@ class CancelBookingUseCase(private val bookingRepository: BookingRepository) {
 class FetchWeeklyReportUseCase(private val paymentRepository: PaymentRepository) {
     suspend operator fun invoke() = paymentRepository.fetchWeeklyReport()
 }
-

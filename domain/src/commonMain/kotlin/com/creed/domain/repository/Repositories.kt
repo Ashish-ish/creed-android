@@ -1,17 +1,19 @@
 package com.creed.domain.repository
 
 import com.creed.domain.models.*
+import kotlinx.serialization.Serializable
 
 interface AuthRepository {
     suspend fun requestOtp(phone: String): Result<Unit>
     suspend fun verifyOtp(phone: String, otp: String): Result<FirebaseUser>
+    suspend fun checkUserExists(firebaseToken: String): Result<UserExistsResponse>
     suspend fun registerUser(firebaseToken: String): Result<AuthTokens>
     suspend fun loginUser(firebaseToken: String): Result<AuthTokens>
 }
 
 interface UserRepository {
     suspend fun getProfile(): Result<User>
-    suspend fun updateProfile(user: User): Result<User>
+    suspend fun updateProfile(profileRequest: ProfileUpdateRequest): Result<User>
 }
 
 interface ArenaRepository {
@@ -39,7 +41,9 @@ interface PaymentRepository {
     suspend fun fetchWeeklyReport(): Result<WeeklyReport>
 }
 
-// Copilot: Placeholder for FirebaseUser, AuthTokens, WeeklyReport
-class FirebaseUser // Copilot: platform-specific
-class AuthTokens(val authToken: String, val refreshToken: String, val userId: String)
-class WeeklyReport // Copilot: define as needed
+@Serializable
+data class WeeklyReport(
+    val totalBookings: Int,
+    val totalRevenue: Double,
+    val popularSports: List<String>
+)

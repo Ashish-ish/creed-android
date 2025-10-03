@@ -4,14 +4,14 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class User(
-    val id: String,
-    val phoneNumber: String,
-    val email: String = "",
-    val firstName: String,
-    val lastName: String,
-    val gender: String, // "male" | "female" | "other"
-    val dateOfBirth: String, // yyyy-MM-dd
-    val role: String = "user"
+    val id: String?=null,
+    val phoneNumber: String? = null,
+    val email: String? = null,
+    val firstName: String?=null,
+    val lastName: String?=null,
+    val gender: String?=null, // "male" | "female" | "other"
+    val dateOfBirth: String?=null, // yyyy-MM-dd
+    val role: String? = "user"
 )
 
 @Serializable
@@ -155,3 +155,30 @@ data class RecentActivity(
 enum class ActivityStatus {
     UPCOMING, COMPLETED, CANCELLED
 }
+
+// Authentication models
+@Serializable
+data class AuthTokens(
+    val userId: String,
+    val authToken: String,
+    val refreshToken: String
+)
+
+@Serializable
+data class UserExistsResponse(
+    val exists: Boolean
+)
+
+@Serializable
+data class ProfileUpdateRequest(
+    val firstName: String,
+    val lastName: String,
+    val gender: String,
+    val dateOfBirth: String
+)
+
+// Firebase user representation
+data class FirebaseUser(
+    val uid: String,
+    val token: String
+)

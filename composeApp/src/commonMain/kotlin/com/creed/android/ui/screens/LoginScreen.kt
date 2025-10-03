@@ -28,11 +28,13 @@ fun LoginScreen(
     var phoneNumber by remember { mutableStateOf("") }
     var otp by remember { mutableStateOf("") }
 
-    // Handle state changes for navigation
+    // Handle state changes for navigation - proper way without effects
     LaunchedEffect(state) {
         when (state) {
-            is LoginState.OtpVerified -> {
-                // Navigate after successful verification
+            is LoginState.UserExists -> {
+                navigator.navigate(Route.Home)
+            }
+            is LoginState.ProfileCompletionRequired -> {
                 navigator.navigate(Route.ProfileCompletion)
             }
             else -> { /* Handle other states */ }
@@ -91,6 +93,8 @@ fun LoginScreen(
                 ) {
                     if (currentState is LoginState.Loading) {
                         CircularProgressIndicator(modifier = Modifier.size(16.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Sending...")
                     } else {
                         Text("Send OTP")
                     }
@@ -123,7 +127,7 @@ fun LoginScreen(
                 Button(
                     onClick = {
                         if (otp.length == 6) {
-                            viewModel.verifyOtp(otp)
+                            viewModel.verifyOtp(currentState.phone, otp)
                         }
                     },
                     modifier = Modifier.fillMaxWidth(),
@@ -145,55 +149,117 @@ fun LoginScreen(
                 }
             }
 
-            is LoginState.Error -> {
-                // Show error and allow retry
-                OutlinedTextField(
-                    value = phoneNumber,
-                    onValueChange = {
-                        if (it.length <= 10 && it.all { char -> char.isDigit() }) {
-                            phoneNumber = it
-                            viewModel.clearError()
-                        }
-                    },
-                    label = { Text("Phone Number") },
-                    placeholder = { Text("Enter 10-digit mobile number") },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
-                    modifier = Modifier.fillMaxWidth(),
-                    prefix = { Text("+91 ") },
-                    isError = true
-                )
-
-                Text(
-                    text = currentState.message,
-                    color = MaterialTheme.colorScheme.error,
-                    fontSize = 12.sp,
-                    modifier = Modifier.padding(top = 4.dp)
-                )
-
-                Spacer(modifier = Modifier.height(24.dp))
-
-                Button(
-                    onClick = {
-                        if (phoneNumber.length == 10) {
-                            viewModel.sendOtp(phoneNumber)
-                        }
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                    enabled = phoneNumber.length == 10
-                ) {
-                    Text("Retry Send OTP")
-                }
-            }
-
-            is LoginState.OtpVerified -> {
-                // Show success state briefly before navigation
+            is LoginState.UserExists -> {
+                // User already exists, showing success message
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    CircularProgressIndicator()
+                    Text(
+                        text = "Welcome back!",
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(bottom = 16.dp)
+                    )
+
+                    Text(
+                        text = "Hello ${currentState.user.firstName}",
+                        fontSize = 16.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(bottom = 24.dp)
+                    )
+
+                    CircularProgressIndicator(modifier = Modifier.size(32.dp))
+
                     Spacer(modifier = Modifier.height(16.dp))
-                    Text("OTP Verified Successfully!")
-                    Text("Setting up your account...")
+
+                    Text(
+                        text = "Redirecting to home...",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+
+            is LoginState.ProfileCompletionRequired -> {
+                // Profile completion required, showing message
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "Welcome to Creed!",
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(bottom = 16.dp)
+                    )
+
+                    Text(
+                        text = "Please complete your profile to continue",
+                        fontSize = 16.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.padding(bottom = 24.dp)
+                    )
+
+                    CircularProgressIndicator(modifier = Modifier.size(32.dp))
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Text(
+                        text = "Redirecting to profile setup...",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+
+            is LoginState.Error -> {
+                // Show error and allow retry
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 24.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.errorContainer
+                        )
+                    ) {
+                        Text(
+                            text = currentState.message,
+                            color = MaterialTheme.colorScheme.onErrorContainer,
+                            modifier = Modifier.padding(16.dp),
+                            textAlign = TextAlign.Center
+                        )
+                    }
+
+                    OutlinedTextField(
+                        value = phoneNumber,
+                        onValueChange = {
+                            if (it.length <= 10 && it.all { char -> char.isDigit() }) {
+                                phoneNumber = it
+                                viewModel.clearError()
+                            }
+                        },
+                        label = { Text("Phone Number") },
+                        placeholder = { Text("Enter 10-digit mobile number") },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
+                        modifier = Modifier.fillMaxWidth(),
+                        prefix = { Text("+91 ") },
+                        isError = true
+                    )
+
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    Button(
+                        onClick = {
+                            if (phoneNumber.length == 10) {
+                                viewModel.sendOtp(phoneNumber)
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        enabled = phoneNumber.length == 10
+                    ) {
+                        Text("Retry")
+                    }
                 }
             }
         }

@@ -10,21 +10,30 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavHostController
+import com.creed.android.navigation.Navigator
 import com.creed.android.navigation.Route
+import com.creed.android.vm.SplashState
+import com.creed.android.vm.SplashViewModel
 import kotlinx.coroutines.delay
+import org.koin.compose.koinInject
 
 @Composable
-fun SplashScreen(navController: NavHostController) {
-    var isLoading by remember { mutableStateOf(true) }
+fun SplashScreen(navController: Navigator) {
+    val viewModel: SplashViewModel = koinInject()
+    val state by viewModel.state.collectAsState()
 
-    LaunchedEffect(Unit) {
-        delay(2000) // 2 seconds delay
-        isLoading = false
-        // TODO: Check if user is logged in via DataStore/SharedPreferences
-        // For now, always navigate to login as login is mandatory
-        navController.navigate(Route.Login.path) {
-            popUpTo(Route.Splash.path) { inclusive = true }
+    // Handle navigation based on state
+    LaunchedEffect(state) {
+        when (state) {
+            is SplashState.NavigateToHome -> {
+                navController.navigate(Route.MainScreen, true)
+            }
+            is SplashState.NavigateToLogin -> {
+                navController.navigate(Route.Login, true)
+            }
+            is SplashState.Loading -> {
+                // Stay on splash screen
+            }
         }
     }
 
@@ -40,8 +49,8 @@ fun SplashScreen(navController: NavHostController) {
                 )
             )
     ) {
-        // Center loader
-        if (isLoading) {
+        // Center loader - show when loading
+        if (state is SplashState.Loading) {
             CircularProgressIndicator(
                 modifier = Modifier.align(Alignment.Center),
                 color = MaterialTheme.colorScheme.onPrimary

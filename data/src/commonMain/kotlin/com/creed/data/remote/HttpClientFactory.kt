@@ -5,8 +5,8 @@ import io.ktor.client.HttpClient
 
 object HttpClientFactory {
     fun create(keyValueStorage: KeyValueStorage): HttpClient {
-        return KtorClientProvider.createClient {
-            keyValueStorage.getString("AUTH_TOKEN")
-        }
+        return KtorClientProvider.createClient(
+            keyValueStorage
+            )
     }
 }

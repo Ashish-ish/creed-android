@@ -1,5 +1,7 @@
 package com.creed.data.remote
 
+import com.creed.data.local.KeyValueStorage
+import com.creed.data.local.StorageKeys
 import io.ktor.client.*
 import io.ktor.client.engine.*
 import io.ktor.client.plugins.contentnegotiation.*
@@ -15,19 +17,25 @@ expect fun providePlatformEngine(): HttpClientEngine
 expect fun provideTokenProvider(): suspend () -> String?
 
 object KtorClientProvider {
-    fun createClient(tokenProvider: suspend () -> String?): HttpClient {
+    fun createClient(keyValueStorage: KeyValueStorage): HttpClient {
         return HttpClient(providePlatformEngine()) {
             install(ContentNegotiation) {
                 json(Json { ignoreUnknownKeys = true })
             }
+            install(ContentNegotiation) {
+                json(Json {
+                    ignoreUnknownKeys = true
+                    prettyPrint = true
+                })
+            }
             install(Logging) {
                 level = LogLevel.HEADERS
             }
-            defaultRequest {
-                // Copilot: Token must be injected via plugin/interceptor, not here (suspend not allowed)
+            install(DefaultRequest) {
+                url("http://10.0.2.2:3000/")
             }
             install(AuthHeaderPlugin) {
-                this.tokenProvider = tokenProvider
+                this.tokenProvider = { keyValueStorage.getString(StorageKeys.AUTH_TOKEN) }
             }
             HttpResponseValidator {
                 handleResponseExceptionWithRequest { cause, _ ->

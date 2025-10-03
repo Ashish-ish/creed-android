@@ -1,16 +1,24 @@
 package com.creed.di
 
-import android.content.Context
+import com.creed.data.auth.FirebaseAuthDataSource
+import com.creed.data.auth.FirebaseAuthDataSourceAndroid
+import com.creed.data.auth.ActivityManager
 import com.creed.data.local.AndroidKeyValueStorage
 import com.creed.data.local.KeyValueStorage
-import com.creed.data.otp.OtpDataSource
-import com.creed.data.otp.OtpDataSourceAndroid
-import com.creed.data.payment.PaymentDataSource
-import com.creed.data.payment.PaymentDataSourceAndroid
+import org.koin.core.module.Module
 import org.koin.dsl.module
 
-fun androidModule(context: Context) = module {
-    single<KeyValueStorage> { AndroidKeyValueStorage(context) }
-    single<OtpDataSource> { OtpDataSourceAndroid() }
-    single<PaymentDataSource> { PaymentDataSourceAndroid() }
+val androidModule: Module = module {
+    // Provide platform-specific KeyValueStorage implementation
+    single<KeyValueStorage> { AndroidKeyValueStorage(get()) }
+
+    // Provide Firebase Auth DataSource
+    single<FirebaseAuthDataSource> {
+        FirebaseAuthDataSourceAndroid(get())
+    }
+
+    // Provide ActivityManager interface for MainActivity to set current activity
+//    single<ActivityManager> {
+//        get<FirebaseAuthDataSource>() as FirebaseAuthDataSourceAndroid
+//    }
 }

@@ -40,7 +40,7 @@ fun CreedNavHost(navController: NavHostController, navigator: Navigator) {
         startDestination = Route.Splash.path
     ) {
         composable(Route.Splash.path) {
-            SplashScreen(navController)
+            SplashScreen(navigator)
         }
         composable(Route.Login.path) {
             LoginScreen(
@@ -48,13 +48,13 @@ fun CreedNavHost(navController: NavHostController, navigator: Navigator) {
             )
         }
         composable(Route.ProfileCompletion.path) {
-            ProfileCompletionScreen(navController)
+            ProfileCompletionScreen(navigator)
         }
         composable(Route.LocationPermission.path) {
             LocationPermissionScreen(navController)
         }
         composable(Route.MainScreen.path) {
-            MainScreen(navController)
+            MainScreen(navigator)
         }
         composable(Route.ArenaDetail.path) { backStackEntry ->
             val arenaId = backStackEntry.arguments?.getString("arenaId") ?: ""

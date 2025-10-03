@@ -11,10 +11,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavHostController
+import com.creed.android.navigation.Navigator
 
 @Composable
-fun BookingsScreen(navController: NavHostController) {
+fun BookingsScreen(navigator: Navigator) {
     var selectedTab by remember { mutableStateOf(0) }
     val tabs = listOf("Upcoming", "Past")
 

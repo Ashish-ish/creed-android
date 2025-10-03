@@ -11,20 +11,35 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavHostController
+import com.creed.android.navigation.Navigator
 import com.creed.android.navigation.Route
+import com.creed.android.vm.ProfileCompletionViewModel
+import com.creed.android.vm.ProfileCompletionState
+import org.koin.compose.koinInject
 
 @Composable
-fun ProfileCompletionScreen(navController: NavHostController) {
+fun ProfileCompletionScreen(navigator: Navigator) {
+    val viewModel: ProfileCompletionViewModel = koinInject()
+    val state by viewModel.state.collectAsState()
+
     var firstName by remember { mutableStateOf("") }
     var lastName by remember { mutableStateOf("") }
-    var email by remember { mutableStateOf("") }
     var selectedGender by remember { mutableStateOf("") }
     var dateOfBirth by remember { mutableStateOf("") }
-    var isLoading by remember { mutableStateOf(false) }
-    var errorMessage by remember { mutableStateOf("") }
 
-    val genderOptions = listOf("Male", "Female", "Other")
+    val genderOptions = listOf("male", "female", "other")
+
+    // Handle navigation based on state changes
+    LaunchedEffect(state) {
+        when (state) {
+            is ProfileCompletionState.Success -> {
+                navigator.navigate(Route.Home)
+            }
+            else -> {
+                // Handle other states in UI
+            }
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -50,10 +65,17 @@ fun ProfileCompletionScreen(navController: NavHostController) {
         // First Name
         OutlinedTextField(
             value = firstName,
-            onValueChange = { firstName = it },
+            onValueChange = {
+                firstName = it
+                if (state is ProfileCompletionState.Error) {
+                    viewModel.clearError()
+                }
+            },
             label = { Text("First Name") },
+            placeholder = { Text("Enter your first name") },
             modifier = Modifier.fillMaxWidth(),
-            isError = errorMessage.contains("first name", ignoreCase = true)
+            enabled = state !is ProfileCompletionState.Loading,
+            isError = state is ProfileCompletionState.Error && firstName.isBlank()
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -61,20 +83,17 @@ fun ProfileCompletionScreen(navController: NavHostController) {
         // Last Name
         OutlinedTextField(
             value = lastName,
-            onValueChange = { lastName = it },
+            onValueChange = {
+                lastName = it
+                if (state is ProfileCompletionState.Error) {
+                    viewModel.clearError()
+                }
+            },
             label = { Text("Last Name") },
+            placeholder = { Text("Enter your last name") },
             modifier = Modifier.fillMaxWidth(),
-            isError = errorMessage.contains("last name", ignoreCase = true)
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Email
-        OutlinedTextField(
-            value = email,
-            onValueChange = { email = it },
-            label = { Text("Email (Optional)") },
-            modifier = Modifier.fillMaxWidth()
+            enabled = state !is ProfileCompletionState.Loading,
+            isError = state is ProfileCompletionState.Error && lastName.isBlank()
         )
 
         Spacer(modifier = Modifier.height(24.dp))
@@ -84,6 +103,7 @@ fun ProfileCompletionScreen(navController: NavHostController) {
             Text(
                 text = "Gender",
                 fontSize = 16.sp,
+                fontWeight = FontWeight.Medium,
                 modifier = Modifier.padding(bottom = 8.dp)
             )
 
@@ -93,17 +113,28 @@ fun ProfileCompletionScreen(navController: NavHostController) {
                         .fillMaxWidth()
                         .selectable(
                             selected = selectedGender == gender,
-                            onClick = { selectedGender = gender }
+                            onClick = {
+                                selectedGender = gender
+                                if (state is ProfileCompletionState.Error) {
+                                    viewModel.clearError()
+                                }
+                            }
                         )
                         .padding(vertical = 4.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     RadioButton(
                         selected = selectedGender == gender,
-                        onClick = { selectedGender = gender }
+                        onClick = {
+                            selectedGender = gender
+                            if (state is ProfileCompletionState.Error) {
+                                viewModel.clearError()
+                            }
+                        },
+                        enabled = state !is ProfileCompletionState.Loading
                     )
                     Text(
-                        text = gender,
+                        text = gender.replaceFirstChar { it.uppercase() },
                         modifier = Modifier.padding(start = 8.dp)
                     )
                 }
@@ -115,51 +146,95 @@ fun ProfileCompletionScreen(navController: NavHostController) {
         // Date of Birth
         OutlinedTextField(
             value = dateOfBirth,
-            onValueChange = { dateOfBirth = it },
+            onValueChange = { input ->
+                if (input.length <= 10) {
+                    dateOfBirth = input
+                    if (state is ProfileCompletionState.Error) {
+                        viewModel.clearError()
+                    }
+                }
+            },
             label = { Text("Date of Birth") },
-            placeholder = { Text("YYYY-MM-DD") },
+            placeholder = { Text("YYYY-MM-DD (e.g., 1990-01-15)") },
             modifier = Modifier.fillMaxWidth(),
-            isError = errorMessage.contains("date", ignoreCase = true)
+            enabled = state !is ProfileCompletionState.Loading,
+            isError = state is ProfileCompletionState.Error && !isValidDateFormat(dateOfBirth),
+            supportingText = {
+                if (state is ProfileCompletionState.Error && !isValidDateFormat(dateOfBirth)) {
+                    Text("Please enter a valid date in YYYY-MM-DD format")
+                } else {
+                    Text("Format: YYYY-MM-DD")
+                }
+            }
         )
 
-        if (errorMessage.isNotEmpty()) {
-            Text(
-                text = errorMessage,
-                color = MaterialTheme.colorScheme.error,
-                fontSize = 12.sp,
-                modifier = Modifier.padding(top = 8.dp)
-            )
+        // Show error message if any
+        if (state is ProfileCompletionState.Error) {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 16.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.errorContainer
+                )
+            ) {
+                Text(
+                    text = (state as ProfileCompletionState.Error).message,
+                    color = MaterialTheme.colorScheme.onErrorContainer,
+                    modifier = Modifier.padding(16.dp)
+                )
+            }
         }
 
         Spacer(modifier = Modifier.height(32.dp))
 
         Button(
             onClick = {
-                when {
-                    firstName.isBlank() -> errorMessage = "First name is required"
-                    lastName.isBlank() -> errorMessage = "Last name is required"
-                    selectedGender.isBlank() -> errorMessage = "Please select gender"
-                    dateOfBirth.isBlank() -> errorMessage = "Date of birth is required"
-                    else -> {
-                        isLoading = true
-                        errorMessage = ""
-                        // TODO: Save profile data to DataStore/SharedPreferences
-                        // For now, navigate to location permission
-                        isLoading = false
-                        navController.navigate(Route.LocationPermission.path) {
-                            popUpTo(Route.ProfileCompletion.path) { inclusive = true }
-                        }
-                    }
-                }
+                viewModel.submitProfile(
+                    firstName = firstName,
+                    lastName = lastName,
+                    gender = selectedGender,
+                    dateOfBirth = dateOfBirth
+                )
             },
             modifier = Modifier.fillMaxWidth(),
-            enabled = !isLoading
+            enabled = state !is ProfileCompletionState.Loading &&
+                firstName.isNotBlank() &&
+                lastName.isNotBlank() &&
+                selectedGender.isNotBlank() &&
+                isValidDateFormat(dateOfBirth)
         ) {
-            if (isLoading) {
-                CircularProgressIndicator(Modifier.size(16.dp))
-            } else {
-                Text("Continue")
+            when (state) {
+                is ProfileCompletionState.Loading -> {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(16.dp),
+                        strokeWidth = 2.dp
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Completing...")
+                }
+                is ProfileCompletionState.Success -> {
+                    Text("Profile Completed!")
+                }
+                else -> {
+                    Text("Complete Profile")
+                }
             }
         }
+    }
+}
+
+private fun isValidDateFormat(date: String): Boolean {
+    return try {
+        val parts = date.split("-")
+        if (parts.size != 3) return false
+
+        val year = parts[0].toIntOrNull() ?: return false
+        val month = parts[1].toIntOrNull() ?: return false
+        val day = parts[2].toIntOrNull() ?: return false
+
+        year in 1900..2010 && month in 1..12 && day in 1..31
+    } catch (e: Exception) {
+        false
     }
 }

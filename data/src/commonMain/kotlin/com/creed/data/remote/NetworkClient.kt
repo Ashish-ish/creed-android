@@ -11,9 +11,9 @@ interface NetworkClient {
 
 class KtorNetworkClient(private val keyValueStorage: KeyValueStorage) : NetworkClient {
     private val httpClient by lazy {
-        KtorClientProvider.createClient {
-            keyValueStorage.getString("AUTH_TOKEN")
-        }
+        KtorClientProvider.createClient(
+            keyValueStorage
+        )
     }
 
     override suspend fun <T> get(url: String, parameters: Map<String, Any>): T {

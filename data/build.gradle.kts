@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidLibrary)
+    alias(libs.plugins.kotlinSerialization)
 }
 
 kotlin {
@@ -36,6 +37,15 @@ kotlin {
                 implementation(libs.ktor.client.okhttp)
                 implementation(libs.androidx.datastore.core)
                 implementation(libs.androidx.datastore.preference)
+
+                // Firebase dependencies
+                implementation(
+                    project.dependencies.platform("com.google.firebase:firebase-bom:34.3.0")
+                )
+                implementation(libs.firebase.auth)
+                implementation(libs.firebase.crashlytics)
+                implementation(libs.firebase.analytics)
+                implementation(libs.firebase.perf)
             }
         }
 
@@ -45,6 +55,12 @@ kotlin {
         val iosMain by creating {
             dependencies {
                 implementation(libs.ktor.client.darwin)
+
+                // Firebase dependencies for iOS will be added via CocoaPods
+                // Add to iosApp/Podfile:
+                // pod 'Firebase/Auth', '10.27.0'
+                // pod 'Firebase/Crashlytics', '10.27.0'
+                // pod 'Firebase/Analytics', '10.27.0'
             }
         }
     }

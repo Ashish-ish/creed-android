@@ -3,6 +3,7 @@ package com.creed.ios.navigation
 import androidx.compose.runtime.Composable
 import com.creed.android.navigation.Route
 import com.creed.android.ui.screens.*
+import com.creed.ios.ui.screens.MainScreen
 
 @Composable
 fun CreedApp(navigator: IOSNavigator) {

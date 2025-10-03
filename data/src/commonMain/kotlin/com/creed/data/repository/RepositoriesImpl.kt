@@ -2,6 +2,10 @@ package com.creed.data.repository
 
 import com.creed.data.remote.dto.*
 import com.creed.data.remote.mapper.*
+import com.creed.data.local.KeyValueStorage
+import com.creed.data.local.StorageKeys
+import com.creed.data.auth.FirebaseAuthDataSource
+import com.creed.data.local.putObject
 import com.creed.domain.models.*
 import com.creed.domain.repository.*
 import io.ktor.client.*
@@ -9,64 +13,123 @@ import io.ktor.client.call.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.serialization.json.Json
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlin.coroutines.resume
+import kotlinx.coroutines.launch
+import kotlinx.serialization.builtins.serializer
 
-class AuthRepositoryImpl(private val httpClient: HttpClient) : AuthRepository {
+class AuthRepositoryImpl(
+    private val httpClient: HttpClient,
+    private val keyValueStorage: KeyValueStorage,
+    private val firebaseAuthDataSource: FirebaseAuthDataSource
+) : AuthRepository {
+
     override suspend fun requestOtp(phone: String): Result<Unit> = runCatching {
-        httpClient.post("/api/users/check") {
-            contentType(ContentType.Application.Json)
-            setBody(mapOf("phone" to phone))
+        suspendCancellableCoroutine { continuation ->
+            CoroutineScope(continuation.context).launch {
+                firebaseAuthDataSource.signInWithPhoneNumber(
+                    phone = phone,
+                    onCodeSent = {
+                        continuation.resume(Unit)
+                    },
+                    onVerificationCompleted = { token ->
+                        // Auto verification completed, we'll handle this in verifyOtp
+                        continuation.resume(Unit)
+                    },
+                    onError = { error ->
+                        throw Exception("OTP request failed: $error")
+                    }
+                )
+            }
         }
     }
 
     override suspend fun verifyOtp(phone: String, otp: String): Result<FirebaseUser> = runCatching {
-        // Copilot: Platform-specific Firebase verification handled in composeApp
-        throw NotImplementedError("Platform-specific")
+        suspendCancellableCoroutine { continuation ->
+            CoroutineScope(continuation.context).launch {
+                firebaseAuthDataSource.verifyCode(
+                    code = otp,
+                    onSuccess = { firebaseToken ->
+                        val firebaseUser = FirebaseUser(
+                            uid = "firebase_uid", // Firebase will provide this
+                            token = firebaseToken
+                        )
+                        continuation.resume(firebaseUser)
+                    },
+                    onError = { error ->
+                        throw Exception("OTP verification failed: $error")
+                    }
+                )
+            }
+        }
+    }
+
+    override suspend fun checkUserExists(firebaseToken: String): Result<UserExistsResponse> = runCatching {
+        val response: UserExistsResponseDto = httpClient.get("/api/users/check") {
+            header("Firebase-Token", firebaseToken)
+        }.body()
+        response.toDomain()
     }
 
     override suspend fun registerUser(firebaseToken: String): Result<AuthTokens> = runCatching {
-        val response: HttpResponse = httpClient.post("/api/users/register") {
+        val response: AuthTokensDto = httpClient.post("/api/users/register") {
             header("Firebase-Token", firebaseToken)
-        }
-        // Copilot: Parse response to AuthTokens
-        AuthTokens("authToken", "refreshToken", "userId") // Placeholder
+        }.body()
+
+        val authTokens = response.toDomain()
+
+        // Save tokens to local storage
+        keyValueStorage.putString(StorageKeys.FIREBASE_TOKEN, firebaseToken)
+        keyValueStorage.putString(StorageKeys.AUTH_TOKEN, authTokens.authToken)
+        keyValueStorage.putString(StorageKeys.REFRESH_TOKEN, authTokens.refreshToken)
+        keyValueStorage.putString(StorageKeys.USER_ID, authTokens.userId)
+
+        authTokens
     }
 
     override suspend fun loginUser(firebaseToken: String): Result<AuthTokens> = runCatching {
-        val response: HttpResponse = httpClient.post("/api/users/login") {
+        val response: AuthTokensDto = httpClient.post("/api/users/login") {
             header("Firebase-Token", firebaseToken)
-        }
-        AuthTokens("authToken", "refreshToken", "userId") // Placeholder
+        }.body()
+
+        val authTokens = response.toDomain()
+
+        // Save tokens to local storage
+        keyValueStorage.putString(StorageKeys.FIREBASE_TOKEN, firebaseToken)
+        keyValueStorage.putString(StorageKeys.AUTH_TOKEN, authTokens.authToken)
+        keyValueStorage.putString(StorageKeys.REFRESH_TOKEN, authTokens.refreshToken)
+        keyValueStorage.putString(StorageKeys.USER_ID, authTokens.userId)
+
+        authTokens
     }
 }
 
-class UserRepositoryImpl(private val httpClient: HttpClient) : UserRepository {
-    override suspend fun getProfile(): Result<User> = runCatching {
-        // TODO: Replace with actual API call when backend is ready
-        // val dto: UserDto = httpClient.get("/api/users/profile").body()
-        // dto.toDomain()
+class UserRepositoryImpl(
+    private val httpClient: HttpClient,
+    private val keyValueStorage: KeyValueStorage
+) : UserRepository {
 
-        // Mock user data for development
-        User(
-            id = "1",
-            phoneNumber = "+91 9876543210",
-            email = "alex@example.com",
-            firstName = "Alex",
-            lastName = "Johnson",
-            gender = "male",
-            dateOfBirth = "1990-01-01"
-        )
+    override suspend fun getProfile(): Result<User> = runCatching {
+        val response: User = httpClient.get("/api/users/profile").body()
+
+        // Save user profile to local storage
+        keyValueStorage.putObject(StorageKeys.USER_JSON,response)
+
+        response
     }
 
-    override suspend fun updateProfile(user: User): Result<User> = runCatching {
-        // TODO: Replace with actual API call when backend is ready
-        // val dto: UserDto = httpClient.patch("/api/users/profile") {
-        //     contentType(ContentType.Application.Json)
-        //     setBody(user.toDto())
-        // }.body()
-        // dto.toDomain()
+    override suspend fun updateProfile(profileRequest: ProfileUpdateRequest): Result<User> = runCatching {
+        val response: User = httpClient.patch("/api/users/profile") {
+            contentType(ContentType.Application.Json)
+            setBody(profileRequest)
+        }.body()
 
-        // Mock implementation - return the updated user
-        user
+        // Save updated user profile to local storage
+        keyValueStorage.putObject(StorageKeys.USER_JSON,response)
+
+        response
     }
 }
 
@@ -199,6 +262,6 @@ class PaymentRepositoryImpl(private val httpClient: HttpClient) : PaymentReposit
         "orderId" // Placeholder
     }
     override suspend fun fetchWeeklyReport(): Result<WeeklyReport> = runCatching {
-        WeeklyReport() // Placeholder
+        WeeklyReport(totalBookings = 1, totalRevenue = 1000.0, popularSports = listOf()) // Placeholder
     }
 }

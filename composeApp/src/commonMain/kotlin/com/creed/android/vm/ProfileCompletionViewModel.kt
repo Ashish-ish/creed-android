@@ -1,27 +1,53 @@
 package com.creed.android.vm
 
 import com.creed.android.vm.BaseViewModel
-
 import com.creed.domain.models.User
-import com.creed.usecase.UpdateUserProfileUseCase
+import com.creed.domain.models.ProfileUpdateRequest
+import com.creed.usecase.AuthenticationUseCase
 import kotlinx.coroutines.launch
+
 sealed class ProfileCompletionEffect {
     object NavigateToLocationPermission : ProfileCompletionEffect()
+    object NavigateToHome : ProfileCompletionEffect()
     data class ShowSnackBar(val message: String) : ProfileCompletionEffect()
 }
 
 class ProfileCompletionViewModel(
-    private val updateUserProfile: UpdateUserProfileUseCase
+    private val authenticationUseCase: AuthenticationUseCase
 ) : BaseViewModel<ProfileCompletionState, ProfileCompletionEffect>(ProfileCompletionState.Idle) {
-    fun submitProfile(user: User) {
+
+    fun submitProfile(
+        firstName: String,
+        lastName: String,
+        gender: String,
+        dateOfBirth: String
+    ) {
         setState { ProfileCompletionState.Loading }
         viewModelScope.launch {
-            val result = updateUserProfile(user)
-            setState {
-                if (result.isSuccess) ProfileCompletionState.Success(result.getOrThrow())
-                else ProfileCompletionState.Error("Profile update failed")
+            try {
+                val profileRequest = ProfileUpdateRequest(
+                    firstName = firstName,
+                    lastName = lastName,
+                    gender = gender,
+                    dateOfBirth = dateOfBirth
+                )
+
+                val result = authenticationUseCase.completeProfile(profileRequest)
+                if (result.isSuccess) {
+                    setState { ProfileCompletionState.Success(result.getOrThrow()) }
+                    sendEffect(ProfileCompletionEffect.NavigateToHome)
+                } else {
+                    setState { ProfileCompletionState.Error("Profile completion failed: ${result.exceptionOrNull()?.message}") }
+                }
+            } catch (e: Exception) {
+                setState { ProfileCompletionState.Error("Profile completion failed: ${e.message}") }
             }
-            if (result.isSuccess) sendEffect(ProfileCompletionEffect.NavigateToLocationPermission)
+        }
+    }
+
+    fun clearError() {
+        if (state.value is ProfileCompletionState.Error) {
+            setState { ProfileCompletionState.Idle }
         }
     }
 }

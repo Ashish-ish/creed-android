@@ -8,9 +8,10 @@ import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.*
 import com.creed.android.navigation.BottomNavItem
+import com.creed.android.navigation.Navigator
 
 @Composable
-fun MainScreen(navController: NavHostController) {
+fun MainScreen(navigator: Navigator) {
     val bottomNavController = rememberNavController()
     val navBackStackEntry by bottomNavController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
@@ -52,16 +53,16 @@ fun MainScreen(navController: NavHostController) {
             modifier = Modifier.padding(innerPadding)
         ) {
             composable(BottomNavItem.HOME.route) {
-                HomeScreen(navController = navController)
+                HomeScreen(navigator = navigator)
             }
             composable(BottomNavItem.SEARCH.route) {
-                SearchScreen(navController = navController)
+                SearchScreen(navigator = navigator)
             }
             composable(BottomNavItem.BOOKINGS.route) {
-                BookingsScreen(navController = navController)
+                BookingsScreen(navigator = navigator)
             }
             composable(BottomNavItem.PROFILE.route) {
-                ProfileScreen(navController = navController)
+                ProfileScreen(navigator = navigator)
             }
         }
     }

@@ -1,5 +1,6 @@
 package com.creed.android.vm
 
+import com.creed.domain.models.ProfileUpdateRequest
 import com.creed.domain.models.User
 import com.creed.usecase.GetUserProfileUseCase
 import com.creed.usecase.UpdateUserProfileUseCase
@@ -34,7 +35,7 @@ class ProfileViewModel(
     fun updateProfile(user: User) {
         setState { ProfileState.Loading }
         viewModelScope.launch {
-            val result = updateUserProfile(user)
+            val result = updateUserProfile.invoke(profileRequest = ProfileUpdateRequest(firstName = user.firstName.orEmpty(), lastName = user.lastName.orEmpty(), gender= user.gender.orEmpty(), dateOfBirth = user.dateOfBirth.orEmpty()))
             setState {
                 if (result.isSuccess) ProfileState.Success(result.getOrThrow())
                 else ProfileState.Error("Profile update failed")

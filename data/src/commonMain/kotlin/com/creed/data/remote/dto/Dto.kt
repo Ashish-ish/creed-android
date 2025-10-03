@@ -1,17 +1,18 @@
 package com.creed.data.remote.dto
 
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
 
 @Serializable
 data class UserDto(
-    val id: String,
-    val phoneNumber: String,
-    val email: String = "",
-    val firstName: String,
-    val lastName: String,
-    val gender: String,
-    val dateOfBirth: String,
-    val role: String = "user"
+    val id: String?,
+    val phoneNumber: String?,
+    val email: String? = "",
+    val firstName: String?,
+    val lastName: String?,
+    val gender: String?,
+    val dateOfBirth: String?,
+    val role: String? = "user"
 )
 
 @Serializable
@@ -102,3 +103,23 @@ data class BookingDto(
     val equipment: List<EquipmentQuantityDto>
 )
 
+// Authentication DTOs
+@Serializable
+data class AuthTokensDto(
+    val userId: String,
+    val authToken: String,
+    val refreshToken: String
+)
+
+@Serializable
+data class UserExistsResponseDto(
+    val exists: Boolean
+)
+
+@Serializable
+data class ProfileUpdateRequestDto(
+    val firstName: String,
+    val lastName: String,
+    val gender: String,
+    val dateOfBirth: String
+)

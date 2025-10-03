@@ -13,24 +13,120 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavHostController
+import com.creed.android.navigation.Navigator
 import com.creed.android.navigation.Route
+import com.creed.android.vm.ProfileViewModel
+import com.creed.android.vm.ProfileState
+import com.creed.android.vm.ProfileEffect
+import com.creed.domain.models.User
+import com.creed.domain.models.ProfileUpdateRequest
+import org.koin.compose.koinInject
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ProfileScreen(navController: NavHostController) {
+fun ProfileScreen(
+    navigator: Navigator,
+    viewModel: ProfileViewModel = koinInject()
+) {
+    val state by viewModel.state.collectAsState()
     var showEditBottomSheet by remember { mutableStateOf(false) }
     var showLogoutDialog by remember { mutableStateOf(false) }
 
-    // Mock user data
-    val mockUser = remember {
-        MockUser(
-            name = "John Doe",
-            email = "john.doe@example.com",
-            phone = "+91 9876543210"
+    // Load profile data when screen is first opened
+    LaunchedEffect(Unit) {
+        viewModel.loadProfile()
+    }
+
+    when (state) {
+        ProfileState.Loading -> {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
+            }
+        }
+
+        is ProfileState.Error -> {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(
+                        text = "Error: ${(state as ProfileState.Error).message}",
+                        color = MaterialTheme.colorScheme.error
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Button(onClick = { viewModel.loadProfile() }) {
+                        Text("Retry")
+                    }
+                }
+            }
+        }
+
+        is ProfileState.Success -> {
+            ProfileContent(
+                user = (state as ProfileState.Success).user,
+                navigator = navigator,
+                onEditProfile = { showEditBottomSheet = true },
+                onLogout = { showLogoutDialog = true }
+            )
+        }
+
+        ProfileState.Idle -> {
+            // Loading will be triggered by LaunchedEffect
+        }
+    }
+
+    // Edit Profile Bottom Sheet
+    if (showEditBottomSheet && state is ProfileState.Success) {
+        EditProfileBottomSheet(
+            user = (state as ProfileState.Success).user,
+            onDismiss = { showEditBottomSheet = false },
+            onSave = { updatedUser ->
+                viewModel.updateProfile(updatedUser)
+                showEditBottomSheet = false
+            }
         )
     }
 
+    // Logout Dialog
+    if (showLogoutDialog) {
+        AlertDialog(
+            onDismissRequest = { showLogoutDialog = false },
+            title = { Text("Logout") },
+            text = { Text("Are you sure you want to logout?") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showLogoutDialog = false
+                        // Clear storage and navigate to login
+                        navigator.navigate(Route.Login, true)
+                    },
+                    colors = ButtonDefaults.textButtonColors(
+                        contentColor = MaterialTheme.colorScheme.error
+                    )
+                ) {
+                    Text("Yes, Logout")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showLogoutDialog = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
+}
+
+@Composable
+fun ProfileContent(
+    user: User,
+    navigator: Navigator,
+    onEditProfile: () -> Unit,
+    onLogout: () -> Unit
+) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -56,8 +152,13 @@ fun ProfileScreen(navController: NavHostController) {
                         .background(MaterialTheme.colorScheme.primary),
                     contentAlignment = Alignment.Center
                 ) {
+                    val initials = buildString {
+                        user.firstName?.firstOrNull()?.let { append(it) }
+                        user.lastName?.firstOrNull()?.let { append(it) }
+                    }.ifEmpty { "U" }
+
                     Text(
-                        text = mockUser.name.split(" ").map { it.first() }.joinToString(""),
+                        text = initials,
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onPrimary
@@ -67,31 +168,35 @@ fun ProfileScreen(navController: NavHostController) {
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Text(
-                    text = mockUser.name,
+                    text = "${user.firstName.orEmpty()} ${user.lastName.orEmpty()}".trim().ifEmpty { "User" },
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold
                 )
 
-                Text(
-                    text = mockUser.email,
-                    fontSize = 14.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(top = 4.dp)
-                )
+                if (!user.email.isNullOrEmpty()) {
+                    Text(
+                        text = user.email!!,
+                        fontSize = 14.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(top = 4.dp)
+                    )
+                }
 
-                Text(
-                    text = mockUser.phone,
-                    fontSize = 14.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(top = 2.dp)
-                )
+                if (!user.phoneNumber.isNullOrEmpty()) {
+                    Text(
+                        text = user.phoneNumber!!,
+                        fontSize = 14.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(top = 2.dp)
+                    )
+                }
 
                 Spacer(modifier = Modifier.height(16.dp))
 
                 OutlinedButton(
-                    onClick = { showEditBottomSheet = true }
+                    onClick = onEditProfile
                 ) {
-                    Text("✏️") // Using emoji instead of Icon
+                    Text("✏️")
                     Spacer(modifier = Modifier.width(8.dp))
                     Text("Edit Profile")
                 }
@@ -189,7 +294,7 @@ fun ProfileScreen(navController: NavHostController) {
                 .padding(16.dp)
         ) {
             TextButton(
-                onClick = { showLogoutDialog = true },
+                onClick = onLogout,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(8.dp),
@@ -197,53 +302,11 @@ fun ProfileScreen(navController: NavHostController) {
                     contentColor = MaterialTheme.colorScheme.error
                 )
             ) {
-                Text("🚪") // Using emoji instead of Icon
+                Text("🚪")
                 Spacer(modifier = Modifier.width(8.dp))
                 Text("Logout")
             }
         }
-    }
-
-    // Edit Profile Bottom Sheet
-    if (showEditBottomSheet) {
-        EditProfileBottomSheet(
-            user = mockUser,
-            onDismiss = { showEditBottomSheet = false },
-            onSave = { updatedUser ->
-                // TODO: Save updated profile
-                showEditBottomSheet = false
-            }
-        )
-    }
-
-    // Logout Dialog
-    if (showLogoutDialog) {
-        AlertDialog(
-            onDismissRequest = { showLogoutDialog = false },
-            title = { Text("Logout") },
-            text = { Text("Are you sure you want to logout?") },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        showLogoutDialog = false
-                        // TODO: Clear user data and navigate to login
-                        navController.navigate(Route.Login.path) {
-                            popUpTo(0) { inclusive = true }
-                        }
-                    },
-                    colors = ButtonDefaults.textButtonColors(
-                        contentColor = MaterialTheme.colorScheme.error
-                    )
-                ) {
-                    Text("Yes, Logout")
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showLogoutDialog = false }) {
-                    Text("Cancel")
-                }
-            }
-        )
     }
 }
 
@@ -286,12 +349,13 @@ fun ProfileMenuItem(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditProfileBottomSheet(
-    user: MockUser,
+    user: User,
     onDismiss: () -> Unit,
-    onSave: (MockUser) -> Unit
+    onSave: (User) -> Unit
 ) {
-    var name by remember { mutableStateOf(user.name) }
-    var email by remember { mutableStateOf(user.email) }
+    var firstName by remember { mutableStateOf(user.firstName.orEmpty()) }
+    var lastName by remember { mutableStateOf(user.lastName.orEmpty()) }
+    var email by remember { mutableStateOf(user.email.orEmpty()) }
 
     ModalBottomSheet(
         onDismissRequest = onDismiss
@@ -309,9 +373,18 @@ fun EditProfileBottomSheet(
             )
 
             OutlinedTextField(
-                value = name,
-                onValueChange = { name = it },
-                label = { Text("Full Name") },
+                value = firstName,
+                onValueChange = { firstName = it },
+                label = { Text("First Name") },
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            OutlinedTextField(
+                value = lastName,
+                onValueChange = { lastName = it },
+                label = { Text("Last Name") },
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -339,7 +412,11 @@ fun EditProfileBottomSheet(
 
                 Button(
                     onClick = {
-                        onSave(user.copy(name = name, email = email))
+                        onSave(user.copy(
+                            firstName = firstName,
+                            lastName = lastName,
+                            email = email
+                        ))
                     },
                     modifier = Modifier.weight(1f)
                 ) {
@@ -351,9 +428,3 @@ fun EditProfileBottomSheet(
         }
     }
 }
-
-data class MockUser(
-    val name: String,
-    val email: String,
-    val phone: String
-)
