@@ -49,5 +49,6 @@ val commonModule: Module = module {
 
     // Comprehensive Authentication Use Case
     factory { AuthenticationUseCase(get(), get(), get()) }
+    factory { FetchSearchArenasUseCase(get()) }
 
 }

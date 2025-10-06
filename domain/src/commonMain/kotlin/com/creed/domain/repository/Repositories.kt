@@ -21,6 +21,7 @@ interface ArenaRepository {
     suspend fun getArenaDetail(arenaId: String): Result<Arena>
     suspend fun getSports(arenaId: String): Result<List<Sport>>
     suspend fun getSlots(arenaId: String, sportId: String, courtId: String, date: String): Result<List<Slot>>
+    suspend fun searchArenas(query: String, location: String? = null, sport: String? = null, city: String? = null): Result<SearchResponse>
 
     // Home screen specific methods
     suspend fun getHomeSummary(): Result<HomeSummary>

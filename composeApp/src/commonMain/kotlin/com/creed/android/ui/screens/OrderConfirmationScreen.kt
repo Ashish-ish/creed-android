@@ -119,7 +119,7 @@ fun OrderConfirmationScreen(
 
                 TextButton(
                     onClick = {
-                        navigator.navigate(Route.Home, true)
+                        navigator.navigate(Route.MainScreen, true)
                     },
                     modifier = Modifier.padding(top = 8.dp)
                 ) {

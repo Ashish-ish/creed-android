@@ -235,6 +235,16 @@ class ArenaRepositoryImpl(private val httpClient: HttpClient) : ArenaRepository 
             )
         )
     }
+
+    override suspend fun searchArenas(query: String, location: String?, sport: String?, city: String?): Result<SearchResponse> = runCatching {
+        val response: SearchResponseDto = httpClient.get("/api/arenas/search") {
+            parameter("q", query)
+            location?.let { parameter("location", it) }
+            sport?.let { parameter("sport", it) }
+            city?.let { parameter("city", it) }
+        }.body()
+        response.data.toDomain()
+    }
 }
 
 class BookingRepositoryImpl(private val httpClient: HttpClient) : BookingRepository {

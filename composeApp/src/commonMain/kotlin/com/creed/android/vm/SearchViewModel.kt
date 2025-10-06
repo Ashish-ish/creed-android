@@ -1,13 +1,13 @@
 package com.creed.android.vm
 
-import com.creed.domain.models.Arena
-import com.creed.usecase.FetchNearbyArenasUseCase
+import com.creed.domain.models.SearchArena
+import com.creed.usecase.FetchSearchArenasUseCase
 import kotlinx.coroutines.launch
 
 sealed class SearchState {
     object Idle : SearchState()
     object Loading : SearchState()
-    data class Success(val arenas: List<Arena>) : SearchState()
+    data class Success(val arenas: List<SearchArena>) : SearchState()
     data class Error(val message: String) : SearchState()
 }
 
@@ -16,16 +16,17 @@ sealed class SearchEffect {
 }
 
 class SearchViewModel(
-    private val fetchNearbyArenas: FetchNearbyArenasUseCase
+    private val fetchSearchArenas: FetchSearchArenasUseCase
 ) : BaseViewModel<SearchState, SearchEffect>(SearchState.Idle) {
     fun search(query: String) {
         setState { SearchState.Loading }
         viewModelScope.launch {
-            // Copilot: For demo, reuse fetchNearbyArenas with dummy lat/lng
-            val result = fetchNearbyArenas(0.0, 0.0)
+            val result = fetchSearchArenas(query)
             setState {
-                if (result.isSuccess) SearchState.Success(result.getOrThrow())
-                else SearchState.Error("Search failed")
+                result.fold(
+                    onSuccess = { SearchState.Success(it.arenas) },
+                    onFailure = { SearchState.Error(it.message ?: "Search failed") }
+                )
             }
         }
     }

@@ -54,3 +54,7 @@ class FetchWeeklyReportUseCase(private val paymentRepository: PaymentRepository)
     suspend operator fun invoke() = paymentRepository.fetchWeeklyReport()
 }
 
+class FetchSearchArenasUseCase(private val arenaRepository: ArenaRepository) {
+    suspend operator fun invoke(query: String, location: String? = null, sport: String? = null, city: String? = null) =
+        arenaRepository.searchArenas(query, location, sport, city)
+}

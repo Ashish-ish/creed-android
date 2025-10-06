@@ -182,3 +182,72 @@ data class FirebaseUser(
     val uid: String,
     val token: String
 )
+
+// Search-related models
+@Serializable
+data class SearchResponse(
+    val arenas: List<SearchArena>,
+    val pagination: SearchPagination,
+    val searchParams: SearchParams
+)
+
+@Serializable
+data class SearchArena(
+    val id: String,
+    val name: String,
+    val subtitle: String,
+    val imageUrl: String,
+    val address: SearchAddress,
+    val rating: ArenaRating,
+    val priceRange: ArenaPriceRange,
+    val availableSports: List<AvailableSport>,
+    val isFeatured: Boolean
+)
+
+@Serializable
+data class SearchAddress(
+    val fullAddress: String,
+    val area: String,
+    val city: String,
+    val state: String,
+    val pincode: String,
+    val landmark: String,
+    val coordinates: List<Double>
+)
+
+@Serializable
+data class ArenaRating(
+    val average: Double,
+    val count: Int
+)
+
+@Serializable
+data class ArenaPriceRange(
+    val min: Int,
+    val max: Int,
+    val currency: String
+)
+
+@Serializable
+data class AvailableSport(
+    val id: String,
+    val sportId: String,
+    val sportName: String,
+    val sportIcon: String,
+    val isBookingEnabled: Boolean
+)
+
+@Serializable
+data class SearchPagination(
+    val current: Int,
+    val pages: Int,
+    val total: Int
+)
+
+@Serializable
+data class SearchParams(
+    val keyword: String?,
+    val location: String?,
+    val sport: String?,
+    val city: String?
+)

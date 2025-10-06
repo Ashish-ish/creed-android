@@ -33,7 +33,7 @@ fun ProfileCompletionScreen(navigator: Navigator) {
     LaunchedEffect(state) {
         when (state) {
             is ProfileCompletionState.Success -> {
-                navigator.navigate(Route.Home)
+                navigator.navigate(Route.MainScreen)
             }
             else -> {
                 // Handle other states in UI

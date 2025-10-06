@@ -14,6 +14,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.creed.android.theme.CreedTheme
 import com.creed.android.ui.screens.ArenaDetailScreen
+import com.creed.android.ui.screens.BookingsScreen
 import com.creed.android.ui.screens.LocationPermissionScreen
 import com.creed.android.ui.screens.LoginScreen
 import com.creed.android.ui.screens.MainScreen
@@ -102,6 +103,15 @@ fun CreedNavHost(navController: NavHostController, navigator: Navigator) {
                     .windowInsetsPadding(WindowInsets.systemBars)
             ) {
                 OrderConfirmationScreen(navigator, bookingId)
+            }
+        }
+        composable(Route.Bookings.path) { backStackEntry ->
+            Surface(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .windowInsetsPadding(WindowInsets.systemBars)
+            ) {
+                BookingsScreen(navigator)
             }
         }
     }

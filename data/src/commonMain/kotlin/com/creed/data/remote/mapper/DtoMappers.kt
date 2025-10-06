@@ -38,3 +38,64 @@ fun ProfileUpdateRequestDto.toDomain() = ProfileUpdateRequest(firstName, lastNam
 fun AuthTokens.toDto() = AuthTokensDto(userId, authToken, refreshToken)
 fun UserExistsResponse.toDto() = UserExistsResponseDto(exists)
 fun ProfileUpdateRequest.toDto() = ProfileUpdateRequestDto(firstName, lastName, gender, dateOfBirth)
+
+// Search-related mappers
+fun SearchDataDto.toDomain() = SearchResponse(
+    arenas = arenas.map { it.toDomain() },
+    pagination = pagination.toDomain(),
+    searchParams = searchParams.toDomain()
+)
+
+fun SearchArenaDto.toDomain() = SearchArena(
+    id = _id,
+    name = name,
+    subtitle = subtitle,
+    imageUrl = imageUrl,
+    address = address.toDomain(),
+    rating = rating.toDomain(),
+    priceRange = priceRange.toDomain(),
+    availableSports = availableSports.map { it.toDomain() },
+    isFeatured = isFeatured
+)
+
+fun SearchAddressDto.toDomain() = SearchAddress(
+    fullAddress = fullAddress,
+    area = area,
+    city = city,
+    state = state,
+    pincode = pincode,
+    landmark = landmark,
+    coordinates = coordinates.coordinates
+)
+
+fun RatingDto.toDomain() = ArenaRating(
+    average = average,
+    count = count
+)
+
+fun PriceRangeDto.toDomain() = ArenaPriceRange(
+    min = min,
+    max = max,
+    currency = currency
+)
+
+fun AvailableSportDto.toDomain() = AvailableSport(
+    id = _id,
+    sportId = sportId,
+    sportName = sportName,
+    sportIcon = sportIcon,
+    isBookingEnabled = isBookingEnabled
+)
+
+fun PaginationDto.toDomain() = SearchPagination(
+    current = current,
+    pages = pages,
+    total = total
+)
+
+fun SearchParamsDto.toDomain() = SearchParams(
+    keyword = keyword,
+    location = location,
+    sport = sport,
+    city = city
+)

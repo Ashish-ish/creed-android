@@ -123,3 +123,83 @@ data class ProfileUpdateRequestDto(
     val gender: String,
     val dateOfBirth: String
 )
+
+@Serializable
+data class SearchResponseDto(
+    val success: Boolean,
+    val data: SearchDataDto
+)
+
+@Serializable
+data class SearchDataDto(
+    val arenas: List<SearchArenaDto>,
+    val pagination: PaginationDto,
+    val searchParams: SearchParamsDto
+)
+
+@Serializable
+data class SearchArenaDto(
+    val _id: String,
+    val name: String,
+    val subtitle: String,
+    val imageUrl: String,
+    val address: SearchAddressDto,
+    val rating: RatingDto,
+    val priceRange: PriceRangeDto,
+    val availableSports: List<AvailableSportDto>,
+    val isFeatured: Boolean
+)
+
+@Serializable
+data class SearchAddressDto(
+    val coordinates: CoordinatesDto,
+    val fullAddress: String,
+    val area: String,
+    val city: String,
+    val state: String,
+    val pincode: String,
+    val landmark: String
+)
+
+@Serializable
+data class CoordinatesDto(
+    val type: String,
+    val coordinates: List<Double>
+)
+
+@Serializable
+data class RatingDto(
+    val average: Double,
+    val count: Int
+)
+
+@Serializable
+data class PriceRangeDto(
+    val min: Int,
+    val max: Int,
+    val currency: String
+)
+
+@Serializable
+data class AvailableSportDto(
+    val _id: String,
+    val sportId: String,
+    val sportName: String,
+    val sportIcon: String,
+    val isBookingEnabled: Boolean
+)
+
+@Serializable
+data class PaginationDto(
+    val current: Int,
+    val pages: Int,
+    val total: Int
+)
+
+@Serializable
+data class SearchParamsDto(
+    val keyword: String?,
+    val location: String?,
+    val sport: String?,
+    val city: String?
+)
