@@ -46,6 +46,7 @@ kotlin {
                 implementation(libs.firebase.crashlytics)
                 implementation(libs.firebase.analytics)
                 implementation(libs.firebase.perf)
+                implementation(libs.google.location)
             }
         }
 

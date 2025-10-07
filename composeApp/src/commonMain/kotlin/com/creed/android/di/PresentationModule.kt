@@ -18,7 +18,7 @@ val presentationModule = module {
     factory { LoginViewModel(get()) }
     factory { SplashViewModel(get()) }
     factory { ProfileCompletionViewModel(get()) }
-    factory { LocationPermissionViewModel() }
+    factory { LocationPermissionViewModel(get()) }
     factory { ArenaDetailViewModel(get(), get()) }
     factory { SlotPickerViewModel(get()) }
     factory { OrderConfirmationViewModel(get(), get(), get()) }

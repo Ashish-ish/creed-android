@@ -1,7 +1,6 @@
 package com.creed.di
 
-import com.creed.data.local.KeyValueStorage
-import com.creed.data.remote.HttpClientFactory
+
 import com.creed.data.repository.*
 import com.creed.domain.repository.*
 import com.creed.usecase.*
@@ -49,6 +48,6 @@ val commonModule: Module = module {
 
     // Comprehensive Authentication Use Case
     factory { AuthenticationUseCase(get(), get(), get()) }
-    factory { FetchSearchArenasUseCase(get()) }
 
+    factory { FetchSearchArenasUseCase(get()) }
 }

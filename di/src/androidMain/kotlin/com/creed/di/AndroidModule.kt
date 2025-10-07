@@ -1,5 +1,7 @@
 package com.creed.di
 
+import android.content.Context
+import com.creed.data.location.LocationService
 import com.creed.data.auth.FirebaseAuthDataSource
 import com.creed.data.auth.FirebaseAuthDataSourceAndroid
 import com.creed.data.auth.ActivityManager
@@ -13,12 +15,18 @@ val androidModule: Module = module {
     single<KeyValueStorage> { AndroidKeyValueStorage(get()) }
 
     // Provide Firebase Auth DataSource
-    single<FirebaseAuthDataSource> {
-        FirebaseAuthDataSourceAndroid(get())
-    }
-
-    // Provide ActivityManager interface for MainActivity to set current activity
-//    single<ActivityManager> {
-//        get<FirebaseAuthDataSource>() as FirebaseAuthDataSourceAndroid
+//    single<FirebaseAuthDataSource> {
+//        FirebaseAuthDataSourceAndroid()
 //    }
+    single<LocationService> { LocationService(get()) }
+
+    single<FirebaseAuthDataSource> { FirebaseAuthDataSourceAndroid(get()) }
+
+    single<ActivityManager> {
+        get<FirebaseAuthDataSource>() as FirebaseAuthDataSourceAndroid
+    }
+    // Provide ActivityManager interface for MainActivity to set current activity
+    single<ActivityManager> {
+        get<FirebaseAuthDataSource>() as FirebaseAuthDataSourceAndroid
+    }
 }

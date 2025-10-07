@@ -19,7 +19,7 @@ fun BookingDto.toDomain() = Booking(id, arena.toDomain(), sport.toDomain(), cour
 // Reverse mappers as needed
 fun User.toDto() = UserDto(id, phoneNumber, email, firstName, lastName, gender, dateOfBirth, role)
 fun Address.toDto() = AddressDto(street, city, state, zip)
-fun LatLng.toDto() = LatLngDto(lat, lng)
+fun LatLng.toDto() = LatLngDto(latitude, longitude)
 fun Arena.toDto() = ArenaDto(id, name, subtitle, description, address.toDto(), location.toDto(), images)
 fun Sport.toDto() = SportDto(id, arenaId, name, description, rules)
 fun DaySchedule.toDto() = DayScheduleDto(open, close)

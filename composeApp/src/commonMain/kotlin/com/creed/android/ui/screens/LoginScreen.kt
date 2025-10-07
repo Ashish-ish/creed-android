@@ -32,7 +32,7 @@ fun LoginScreen(
     LaunchedEffect(state) {
         when (state) {
             is LoginState.UserExists -> {
-                navigator.navigate(Route.MainScreen)
+                navigator.navigate(Route.LocationPermission)
             }
             is LoginState.ProfileCompletionRequired -> {
                 navigator.navigate(Route.ProfileCompletion)

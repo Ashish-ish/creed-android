@@ -91,7 +91,7 @@ kamel-image = { module = "media.kamel:kamel-image-default", version = "1.0.8" }
 kamel-decoder-jpg = { module = "media.kamel:kamel-decoder-jpeg", version = "1.0.8" }
 kamel-decoder-png = { module = "media.kamel:kamel-decoder-png", version = "1.0.8" }
 kamel-decoder-webp = { module = "media.kamel:kamel-decoder-webp", version = "1.0.8" }
-
+google-location = { module = "com.google.android.gms:play-services-location", version = "21.3.0" }
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
 androidLibrary = { id = "com.android.library", version.ref = "agp" }

@@ -32,7 +32,7 @@ fun SplashScreen(navController: Navigator) {
     LaunchedEffect(state) {
         when (state) {
             is SplashState.NavigateToHome -> {
-                navController.navigate(Route.MainScreen, true)
+                navController.navigate(Route.LocationPermission, true)
             }
             is SplashState.NavigateToLogin -> {
                 navController.navigate(Route.Login, true)
