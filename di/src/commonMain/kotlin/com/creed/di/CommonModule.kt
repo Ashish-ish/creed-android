@@ -50,6 +50,10 @@ val commonModule: Module = module {
     // Comprehensive Authentication Use Case
     factory { AuthenticationUseCase(get(), get(), get()) }
 
+    // Logout monitoring
+    factory { LogoutMonitorUseCase(get()) }
+
     factory { FetchSearchArenasUseCase(get()) }
+
 
 }

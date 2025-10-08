@@ -111,13 +111,13 @@ class UserRepositoryImpl(
     private val keyValueStorage: KeyValueStorage
 ) : UserRepository {
 
-    override suspend fun getProfile(): Result<User> = runCatching {
-        val response: User = httpClient.get("/api/users/profile").body()
+    override suspend fun getProfile(): Result<User?> = runCatching {
+        val response: UserResponse = httpClient.get("/api/users/profile").body()
 
         // Save user profile to local storage
         keyValueStorage.putObject(StorageKeys.USER_JSON,response)
 
-        response
+        response.user
     }
 
     override suspend fun updateProfile(profileRequest: ProfileUpdateRequest): Result<User> = runCatching {

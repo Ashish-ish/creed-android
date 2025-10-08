@@ -18,6 +18,7 @@ kotlin {
                 implementation(project(":domain"))
                 implementation(project(":data"))
                 implementation(libs.koin.core)
+                implementation(libs.kotlinx.coroutines.core)
             }
         }
         val androidMain by getting

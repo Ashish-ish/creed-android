@@ -3,6 +3,11 @@ package com.creed.domain.models
 import kotlinx.serialization.Serializable
 
 @Serializable
+data class UserResponse(
+    val user: User?=null
+)
+
+@Serializable
 data class User(
     val id: String?=null,
     val phoneNumber: String? = null,

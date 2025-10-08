@@ -30,6 +30,7 @@ kotlin {
                 implementation(libs.ktor.client.logging)
                 implementation(libs.koin.core)
                 implementation(libs.kotlinx.serialization.json)
+                implementation(libs.kotlinx.datetime)
             }
         }
         val androidMain by getting {

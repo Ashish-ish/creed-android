@@ -12,7 +12,7 @@ interface AuthRepository {
 }
 
 interface UserRepository {
-    suspend fun getProfile(): Result<User>
+    suspend fun getProfile(): Result<User?>
     suspend fun updateProfile(profileRequest: ProfileUpdateRequest): Result<User>
 }
 

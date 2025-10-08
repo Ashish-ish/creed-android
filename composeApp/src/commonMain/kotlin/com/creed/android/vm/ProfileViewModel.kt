@@ -27,7 +27,7 @@ class ProfileViewModel(
         viewModelScope.launch {
             val result = getUserProfile()
             setState {
-                if (result.isSuccess) ProfileState.Success(result.getOrThrow())
+                if (result.isSuccess && result.getOrNull() !=null) ProfileState.Success(result.getOrNull()!!)
                 else ProfileState.Error("Failed to load profile")
             }
         }

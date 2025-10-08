@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -22,6 +23,8 @@ import com.creed.android.ui.screens.OrderConfirmationScreen
 import com.creed.android.ui.screens.ProfileCompletionScreen
 import com.creed.android.ui.screens.SlotPickerScreen
 import com.creed.android.ui.screens.SplashScreen
+import com.creed.android.vm.LogoutMonitorViewModel
+import org.koin.compose.koinInject
 
 @Composable
 fun CreedApp() {
@@ -34,6 +37,21 @@ fun CreedApp() {
 
 @Composable
 fun CreedNavHost(navController: NavHostController, navigator: Navigator) {
+    // Global logout monitoring - observes AUTH_TOKEN changes
+    val logoutMonitorVM: LogoutMonitorViewModel = koinInject()
+
+    // Handle logout events globally
+    LaunchedEffect(Unit) {
+        logoutMonitorVM.logoutEvent.collect {
+            // When auth token becomes null, clear navigation stack and go to login
+            navController.navigate(Route.Login.path) {
+                // Clear entire back stack
+                popUpTo(0) { inclusive = true }
+                launchSingleTop = true
+            }
+        }
+    }
+
     NavHost(
         navController = navController,
         startDestination = Route.Splash.path,
