@@ -12,6 +12,9 @@ import com.creed.android.ui.screens.home.SportChipUi
 import com.creed.android.ui.screens.home.SummaryState
 import com.creed.android.ui.screens.home.SummaryType
 import com.creed.android.ui.screens.home.UpcomingUi
+import com.creed.data.local.KeyValueStorage
+import com.creed.data.local.StorageKeys
+import com.creed.data.local.putObject
 import com.creed.data.location.LocationPermissionStatus
 import com.creed.data.location.LocationService
 import com.creed.data.location.LocationState
@@ -30,7 +33,8 @@ import kotlin.time.ExperimentalTime
 class HomeViewModel(
     private val arenaRepository: ArenaRepository,
     private val userRepository: UserRepository,
-    private val locationService: LocationService
+    private val locationService: LocationService,
+    private val keyValueStorage: KeyValueStorage
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(HomeState())
@@ -46,6 +50,7 @@ class HomeViewModel(
             locationService.locationState.collect {
                 if (it.permissionStatus == LocationPermissionStatus.GRANTED && it.currentLocation != null) {
                     // You can use the current location to fetch location-based data if needed
+                    keyValueStorage.putObject(StorageKeys.LOCATION,it.currentLocation)
                     loadHomeData(it.currentLocation) // Load home data when location is available
                 }
             }

@@ -26,10 +26,6 @@ class FetchNearbyArenasUseCase(private val arenaRepository: ArenaRepository) {
     suspend operator fun invoke(lat: Double, lng: Double, radiusKm: Int = 10) = arenaRepository.getNearby(lat, lng, radiusKm)
 }
 
-class FetchArenaDetailUseCase(private val arenaRepository: ArenaRepository) {
-    suspend operator fun invoke(arenaId: String) = arenaRepository.getArenaDetail(arenaId)
-}
-
 class FetchSportsUseCase(private val arenaRepository: ArenaRepository) {
     suspend operator fun invoke(arenaId: String) = arenaRepository.getSports(arenaId)
 }

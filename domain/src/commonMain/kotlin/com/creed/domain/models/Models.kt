@@ -32,18 +32,33 @@ data class Arena(
     val name: String,
     val subtitle: String = "",
     val description: String = "",
-    val address: Address,
-    val location: LatLng,
-    val images: List<String>
+    val address: String,
+    val location: LatLng?=null,
+    val images: List<String>?=null,
+    val imageUrl: String,
+    val rating: Float,
+    val reviewCount: Int,
+    val sports: List<Sport>,
+    val amenities: List<Amenity>,
+    val nearbyArenas: List<Arena>,
+    val priceRange: String
+)
+
+@Serializable
+data class Amenity(
+    val id: String,
+    val name: String,
+    val image: String
 )
 
 @Serializable
 data class Sport(
     val id: String,
-    val arenaId: String,
+    val arenaId: String?=null,
     val name: String,
     val description: String = "",
-    val rules: String = ""
+    val rules: String = "",
+    val image: String =""
 )
 
 @Serializable

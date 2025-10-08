@@ -34,4 +34,5 @@ object StorageKeys {
     const val USER_JSON = "USER_JSON"
     const val LOCATION_LAT = "LOCATION_LAT"
     const val LOCATION_LNG = "LOCATION_LNG"
+    const val LOCATION = "LOCATION"
 }

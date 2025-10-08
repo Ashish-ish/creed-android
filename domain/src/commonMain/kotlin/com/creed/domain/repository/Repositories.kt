@@ -18,7 +18,7 @@ interface UserRepository {
 
 interface ArenaRepository {
     suspend fun getNearby(lat: Double, lng: Double, radiusKm: Int = 10): Result<List<Arena>>
-    suspend fun getArenaDetail(arenaId: String): Result<Arena>
+    suspend fun getArenaDetail(arenaId: String, lat: Double? = null, lng: Double? = null): Result<Arena?>
     suspend fun getSports(arenaId: String): Result<List<Sport>>
     suspend fun getSlots(arenaId: String, sportId: String, courtId: String, date: String): Result<List<Slot>>
     suspend fun searchArenas(query: String, location: String? = null, sport: String? = null, city: String? = null): Result<SearchResponse>

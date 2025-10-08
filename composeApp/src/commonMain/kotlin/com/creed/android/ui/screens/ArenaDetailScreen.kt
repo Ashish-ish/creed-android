@@ -20,44 +20,142 @@ import androidx.compose.ui.zIndex
 import androidx.compose.ui.layout.ContentScale
 import com.creed.android.navigation.Navigator
 import com.creed.android.navigation.Route
+import com.creed.android.vm.ArenaDetailViewModel
+import com.creed.domain.models.Arena
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
+import org.koin.compose.koinInject
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ArenaDetailScreen(navigator: Navigator, arenaId: String) {
-    // Mock arena data with enhanced information
-    val mockArena = remember {
-        MockArenaDetail(
-            id = arenaId,
-            name = "ABC Sector 51, Noida",
-            subtitle = "Premium Sports Complex",
-            description = "State-of-the-art sports facility with multiple courts and modern amenities. Perfect for professional and recreational players.",
-            address = "Sector 51, Noida (2.3 KM)",
-            imageUrl = "https://media.istockphoto.com/id/1662909784/photo/american-football-arena-with-yellow-goal-post-grass-field-and-blurred-fans-at-playground-view.jpg?s=612x612&w=0&k=20&c=aDvhsRqKqAEzdH56Q0BqrmvEzmkvPlBThpsQR8Blfl0=",
-            rating = 4.4f,
-            reviewCount = 178,
-            sports = listOf(
-                MockSport("1", "Swimming", "Olympic size pool", "🏊"),
-                MockSport("2", "Badminton", "Professional courts", "🏸"),
-                MockSport("3", "Tennis", "Clay and hard courts", "🎾")
-            ),
-            amenities = listOf(
-                MockAmenity("shower", "Shower", "🚿"),
-                MockAmenity("changing_room", "Changing Room", "👔"),
-                MockAmenity("parking", "Parking", "🅿️"),
-                MockAmenity("wifi", "WiFi", "📶")
-            ),
-            nearbyArenas = listOf(
-                MockNearbyArena("2", "ABC Sector 51", "Sector 51, Noida", 2.5f, 4.8f, "₹200-500", listOf("Swimming", "Badminton", "Tennis")),
-                MockNearbyArena("3", "SportZone Central", "Sector 18, Noida", 3.2f, 4.6f, "₹150-400", listOf("Swimming", "Basketball", "Badminton"))
-            ),
-            priceRange = "₹200-500"
-        )
+    val viewModel: ArenaDetailViewModel = koinInject()
+    val state by viewModel.state.collectAsState()
+
+    // Load arena detail when screen is first composed
+    LaunchedEffect(arenaId) {
+        viewModel.loadArenaDetail(arenaId)
     }
 
     Box(modifier = Modifier.fillMaxSize()
         .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Top))) {
+
+        when {
+            state.isLoading -> {
+                // Loading state
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        CircularProgressIndicator()
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            text = "Loading arena details...",
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
+                }
+            }
+
+            state.error != null -> {
+                // Error state
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.padding(16.dp)
+                    ) {
+                        Text(
+                            text = "❌",
+                            fontSize = 48.sp,
+                            modifier = Modifier.padding(bottom = 16.dp)
+                        )
+                        Text(
+                            text = "Failed to load arena details",
+                            style = MaterialTheme.typography.headlineSmall,
+                            modifier = Modifier.padding(bottom = 8.dp)
+                        )
+                        Text(
+                            text = state.error ?: "Unknown error",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(bottom = 16.dp)
+                        )
+                        Button(
+                            onClick = { viewModel.retry(arenaId) }
+                        ) {
+                            Text("Retry")
+                        }
+                    }
+                }
+            }
+
+            state.arena != null -> {
+                // Success state - show arena details
+                ArenaDetailContent(navigator, state.arena!!)
+            }
+        }
+
+        // Top bar - always show
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .zIndex(1f),
+            colors = CardDefaults.cardColors(
+                containerColor = Color.White.copy(alpha = 0.9f)
+            )
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    IconButton(
+                        onClick = { navigator.goBack() }
+                    ) {
+                        Text("←", fontSize = 24.sp, color = Color.Black)
+                    }
+
+                    Text(
+                        text = state.arena?.name ?: "Arena Details",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.Black,
+                        modifier = Modifier.padding(start = 8.dp)
+                    )
+                }
+
+                Row {
+                    IconButton(
+                        onClick = { /* TODO: Add to favorites */ }
+                    ) {
+                        Text("♡", fontSize = 24.sp, color = Color.Black)
+                    }
+
+                    IconButton(
+                        onClick = { /* TODO: Share arena */ }
+                    ) {
+                        Text("↗", fontSize = 24.sp, color = Color.Black)
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ArenaDetailContent(navigator: Navigator, arena: Arena) {
+    Box(modifier = Modifier.fillMaxSize()) {
         LazyColumn(
             modifier = Modifier.fillMaxSize()
         ) {
@@ -73,15 +171,28 @@ fun ArenaDetailScreen(navigator: Navigator, arenaId: String) {
                         modifier = Modifier.fillMaxSize(),
                         shape = RoundedCornerShape(0.dp)
                     ) {
-                        KamelImage(
-                            resource = asyncPainterResource(mockArena.imageUrl),
-                            contentDescription = "Arena Image",
-                            modifier = Modifier.fillMaxSize(),
-                            contentScale = ContentScale.Crop,
-                            onFailure = {
-                                println("Kamel image error "+it.message)
-                            }
-                        )
+                        if (arena.imageUrl.isNotEmpty()) {
+                            KamelImage(
+                                resource = asyncPainterResource(arena.imageUrl),
+                                contentDescription = "Arena Image",
+                                modifier = Modifier.fillMaxSize(),
+                                contentScale = ContentScale.Crop,
+                                onFailure = {
+                                    println("Kamel image error "+it.message)
+                                }
+                            )
+                        } else {
+                            // Fallback image
+                            KamelImage(
+                                resource = asyncPainterResource("https://media.istockphoto.com/id/1662909784/photo/american-football-arena-with-yellow-goal-post-grass-field-and-blurred-fans-at-playground-view.jpg?s=612x612&w=0&k=20&c=aDvhsRqKqAEzdH56Q0BqrmvEzmkvPlBThpsQR8Blfl0="),
+                                contentDescription = "Arena Image",
+                                modifier = Modifier.fillMaxSize(),
+                                contentScale = ContentScale.Crop,
+                                onFailure = {
+                                    println("Kamel image error "+it.message)
+                                }
+                            )
+                        }
                     }
                 }
             }
@@ -113,7 +224,7 @@ fun ArenaDetailScreen(navigator: Navigator, arenaId: String) {
                             modifier = Modifier.weight(1f)
                         ) {
                             Text(
-                                text = mockArena.address,
+                                text = "${arena.address}",
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Medium
                             )
@@ -134,7 +245,7 @@ fun ArenaDetailScreen(navigator: Navigator, arenaId: String) {
             }
 
             item {
-                // Google Reviews Section
+                // Google Reviews Section - using mock data for now since API doesn't provide this
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -157,7 +268,7 @@ fun ArenaDetailScreen(navigator: Navigator, arenaId: String) {
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = "${mockArena.rating}",
+                                text = "4.4",
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.Bold
                             )
@@ -166,7 +277,7 @@ fun ArenaDetailScreen(navigator: Navigator, arenaId: String) {
                                 fontSize = 16.sp
                             )
                             Text(
-                                text = "${mockArena.reviewCount} reviews",
+                                text = "178 reviews",
                                 fontSize = 14.sp,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -195,7 +306,7 @@ fun ArenaDetailScreen(navigator: Navigator, arenaId: String) {
                         LazyRow(
                             horizontalArrangement = Arrangement.spacedBy(16.dp)
                         ) {
-                            items(mockArena.sports) { sport ->
+                            items(arena.sports) { sport ->
                                 Column(
                                     horizontalAlignment = Alignment.CenterHorizontally,
                                     modifier = Modifier
@@ -203,7 +314,7 @@ fun ArenaDetailScreen(navigator: Navigator, arenaId: String) {
                                         .padding(8.dp)
                                 ) {
                                     Text(
-                                        text = sport.emoji,
+                                        text = sport.image,
                                         fontSize = 32.sp,
                                         modifier = Modifier.padding(bottom = 4.dp)
                                     )
@@ -239,7 +350,7 @@ fun ArenaDetailScreen(navigator: Navigator, arenaId: String) {
                         LazyRow(
                             horizontalArrangement = Arrangement.spacedBy(16.dp)
                         ) {
-                            items(mockArena.amenities) { amenity ->
+                            items(arena.amenities) { amenity ->
                                 Column(
                                     horizontalAlignment = Alignment.CenterHorizontally,
                                     modifier = Modifier
@@ -247,7 +358,7 @@ fun ArenaDetailScreen(navigator: Navigator, arenaId: String) {
                                         .padding(8.dp)
                                 ) {
                                     Text(
-                                        text = amenity.emoji,
+                                        text = amenity.image,
                                         fontSize = 32.sp,
                                         modifier = Modifier.padding(bottom = 4.dp)
                                     )
@@ -280,14 +391,14 @@ fun ArenaDetailScreen(navigator: Navigator, arenaId: String) {
                             modifier = Modifier.padding(bottom = 12.dp)
                         )
 
-                        mockArena.nearbyArenas.forEach { nearbyArena ->
+                        arena.nearbyArenas.forEach { nearbyArena ->
                             NearbyArenaItem(
                                 arena = nearbyArena,
                                 onClick = {
                                     navigator.navigate(Route.ArenaDetail.create(nearbyArena.id))
                                 }
                             )
-                            if (nearbyArena != mockArena.nearbyArenas.last()) {
+                            if (nearbyArena != arena.nearbyArenas.last()) {
                                 Spacer(modifier = Modifier.height(8.dp))
                             }
                         }
@@ -301,57 +412,7 @@ fun ArenaDetailScreen(navigator: Navigator, arenaId: String) {
             }
         }
 
-        // Transparent Top Bar (will be handled by Android navigation wrapper for insets)
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .zIndex(1f),
-            colors = CardDefaults.cardColors(
-                containerColor = Color.White.copy(alpha = 0.9f)
-            )
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    IconButton(
-                        onClick = { navigator.goBack() }
-                    ) {
-                        Text("←", fontSize = 24.sp, color = Color.Black)
-                    }
-
-                    Text(
-                        text = mockArena.name,
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.Black,
-                        modifier = Modifier.padding(start = 8.dp)
-                    )
-                }
-
-                Row {
-                    IconButton(
-                        onClick = { /* TODO: Add to favorites */ }
-                    ) {
-                        Text("♡", fontSize = 24.sp, color = Color.Black)
-                    }
-
-                    IconButton(
-                        onClick = { /* TODO: Share arena */ }
-                    ) {
-                        Text("↗", fontSize = 24.sp, color = Color.Black)
-                    }
-                }
-            }
-        }
-
-        // Bottom Sticky Buttons (will be handled by Android navigation wrapper for insets)
+        // Bottom Sticky Buttons
         Row(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
@@ -361,12 +422,10 @@ fun ArenaDetailScreen(navigator: Navigator, arenaId: String) {
         ) {
             Button(
                 onClick = {
-                    // Navigate to slot picker with first available sport
-                    if (mockArena.sports.isNotEmpty()) {
-                        navigator.navigate(
-                            Route.SlotPicker.create(mockArena.id, mockArena.sports.first().id)
-                        )
-                    }
+                    // Navigate to slot picker - for now using arena ID as sport ID
+                    navigator.navigate(
+                        Route.SlotPicker.create(arena.id, arena.id)
+                    )
                 },
                 modifier = Modifier.weight(1f),
                 colors = ButtonDefaults.buttonColors(
@@ -388,7 +447,7 @@ fun ArenaDetailScreen(navigator: Navigator, arenaId: String) {
 
 @Composable
 fun NearbyArenaItem(
-    arena: MockNearbyArena,
+    arena: Arena,
     onClick: () -> Unit
 ) {
     Card(
@@ -455,7 +514,7 @@ fun NearbyArenaItem(
                             modifier = Modifier.padding(vertical = 2.dp)
                         ) {
                             Text(
-                                text = sport,
+                                text = sport.name,
                                 fontSize = 10.sp,
                                 modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
                             )
@@ -478,11 +537,6 @@ fun NearbyArenaItem(
                     }
                 }
 
-                Text(
-                    text = "${arena.distance} km away",
-                    fontSize = 11.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
             }
 
             Text(
@@ -499,7 +553,6 @@ data class MockArenaDetail(
     val id: String,
     val name: String,
     val subtitle: String,
-    val description: String,
     val address: String,
     val imageUrl: String,
     val rating: Float,

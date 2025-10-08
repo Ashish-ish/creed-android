@@ -1,36 +1,77 @@
 package com.creed.android.vm
 
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.creed.data.local.KeyValueStorage
+import com.creed.data.local.StorageKeys
+import com.creed.data.local.getObject
+import com.creed.data.location.LocationService
 import com.creed.domain.models.Arena
-import com.creed.domain.models.Sport
+import com.creed.domain.models.LatLng
 import com.creed.usecase.FetchArenaDetailUseCase
-import com.creed.usecase.FetchSportsUseCase
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-sealed class ArenaDetailState {
-    object Idle : ArenaDetailState()
-    object Loading : ArenaDetailState()
-    data class Success(val arena: Arena, val sports: List<Sport>) : ArenaDetailState()
-    data class Error(val message: String) : ArenaDetailState()
-}
-
-sealed class ArenaDetailEffect {
-    data class ShowSnackBar(val message: String) : ArenaDetailEffect()
-}
+data class ArenaDetailState(
+    val arena: Arena? = null,
+    val isLoading: Boolean = false,
+    val error: String? = null
+)
 
 class ArenaDetailViewModel(
-    private val fetchArenaDetail: FetchArenaDetailUseCase,
-    private val fetchSports: FetchSportsUseCase
-) : BaseViewModel<ArenaDetailState, ArenaDetailEffect>(ArenaDetailState.Idle) {
-    fun load(arenaId: String) {
-        setState { ArenaDetailState.Loading }
+    private val fetchArenaDetailUseCase: FetchArenaDetailUseCase,
+    private val locationService: LocationService,
+    private val keyValueStorage: KeyValueStorage
+) : ViewModel() {
+
+    private val _state = MutableStateFlow(ArenaDetailState())
+    val state: StateFlow<ArenaDetailState> = _state.asStateFlow()
+
+    private val defaultArenaId = "652000000000000000000010"
+
+    fun loadArenaDetail(arenaId: String?) {
+        val actualArenaId = defaultArenaId /*arenaId?.takeIf { it.isNotBlank() } ?: defaultArenaId*/
+
+        _state.value = _state.value.copy(isLoading = true, error = null)
+
         viewModelScope.launch {
-            val arenaResult = fetchArenaDetail(arenaId)
-            val sportsResult = fetchSports(arenaId)
-            setState {
-                if (arenaResult.isSuccess && sportsResult.isSuccess)
-                    ArenaDetailState.Success(arenaResult.getOrThrow(), sportsResult.getOrThrow())
-                else ArenaDetailState.Error("Failed to load arena details")
+            try {
+                // Get current location for the API call
+                val currentLocation = keyValueStorage.getObject<LatLng>(StorageKeys.LOCATION)
+
+                val result = fetchArenaDetailUseCase.execute(
+                    arenaId = actualArenaId,
+                    lat = currentLocation?.latitude ?: 19.0760, // Default to Mumbai coordinates
+                    lng = currentLocation?.longitude ?: 72.8777
+                )
+
+                result.fold(
+                    onSuccess = { arena ->
+                        _state.value = _state.value.copy(
+                            arena = arena,
+                            isLoading = false,
+                            error = null
+                        )
+                    },
+                    onFailure = { exception ->
+                        _state.value = _state.value.copy(
+                            isLoading = false,
+                            error = exception.message ?: "Failed to load arena details"
+                        )
+                    }
+                )
+            } catch (e: Exception) {
+                _state.value = _state.value.copy(
+                    isLoading = false,
+                    error = e.message ?: "An unexpected error occurred"
+                )
             }
         }
+    }
+
+    fun retry(arenaId: String?) {
+        loadArenaDetail(arenaId)
     }
 }

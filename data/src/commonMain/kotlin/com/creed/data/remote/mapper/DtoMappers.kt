@@ -6,8 +6,27 @@ import com.creed.domain.models.*
 fun UserDto.toDomain() = User(id, phoneNumber, email, firstName, lastName, gender, dateOfBirth, role)
 fun AddressDto.toDomain() = Address(street, city, state, zip)
 fun LatLngDto.toDomain() = LatLng(lat, lng)
-fun ArenaDto.toDomain() = Arena(id, name, subtitle, description, address.toDomain(), location.toDomain(), images)
-fun SportDto.toDomain() = Sport(id, arenaId, name, description, rules)
+fun ArenaDto.toDomain(maxDepth: Int = 1, currentDepth: Int = 0): Arena = Arena(
+    id = id,
+    name = name,
+    subtitle = subtitle,
+    description = description,
+    address = address,
+    location = location?.toDomain(),
+    images = images,
+    imageUrl = imageUrl,
+    rating = rating,
+    reviewCount = reviewCount,
+    sports = sports.map { it.toDomain() },
+    amenities = amenities,
+    nearbyArenas = if (currentDepth < maxDepth) {
+        nearbyArenas.map { it.toDomain(maxDepth, currentDepth + 1) }
+    } else {
+        emptyList() // stop recursion here
+    },
+    priceRange = priceRange
+)
+fun SportDto.toDomain() = Sport(id, arenaId, name, description, rules, image)
 fun DayScheduleDto.toDomain() = DaySchedule(open, close)
 fun CourtDto.toDomain() = Court(id, sportId, arenaId, name, ratePerHour, availability.mapValues { it.value.toDomain() })
 fun SlotDto.toDomain() = Slot(start, end, isBooked)
@@ -20,7 +39,26 @@ fun BookingDto.toDomain() = Booking(id, arena.toDomain(), sport.toDomain(), cour
 fun User.toDto() = UserDto(id, phoneNumber, email, firstName, lastName, gender, dateOfBirth, role)
 fun Address.toDto() = AddressDto(street, city, state, zip)
 fun LatLng.toDto() = LatLngDto(latitude, longitude)
-fun Arena.toDto() = ArenaDto(id, name, subtitle, description, address.toDto(), location.toDto(), images)
+fun Arena.toDto(maxDepth: Int = 1, currentDepth: Int = 0): ArenaDto = ArenaDto(
+    id = id,
+    name = name,
+    subtitle = subtitle,
+    description = description,
+    address = address,
+    location = location?.toDto(),
+    images = images,
+    imageUrl = imageUrl,
+    rating = rating,
+    reviewCount = reviewCount,
+    sports = sports.map { it.toDto() },
+    amenities = amenities,
+    nearbyArenas = if (currentDepth < maxDepth) {
+        nearbyArenas.map { it.toDto(maxDepth, currentDepth + 1) }
+    } else {
+        emptyList()
+    },
+    priceRange = priceRange
+)
 fun Sport.toDto() = SportDto(id, arenaId, name, description, rules)
 fun DaySchedule.toDto() = DayScheduleDto(open, close)
 fun Court.toDto() = CourtDto(id, sportId, arenaId, name, ratePerHour, availability.mapValues { it.value.toDto() })

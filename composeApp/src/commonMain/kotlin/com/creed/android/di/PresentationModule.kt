@@ -22,11 +22,11 @@ val presentationModule = module {
     factory { LogoutMonitorViewModel(get()) }
     factory { ProfileCompletionViewModel(get()) }
     factory { LocationPermissionViewModel(get()) }
-    factory { ArenaDetailViewModel(get(), get()) }
+    factory { ArenaDetailViewModel(get(), get(), get()) }
     factory { SlotPickerViewModel(get()) }
     factory { OrderConfirmationViewModel(get(), get(), get()) }
     factory { BookingsViewModel(get()) }
     factory { ProfileViewModel(get(), get()) }
     factory { SearchViewModel(get()) }
-    factory { HomeViewModel(get(), get(), get()) }
+    factory { HomeViewModel(get(), get(), get(), get()) }
 }

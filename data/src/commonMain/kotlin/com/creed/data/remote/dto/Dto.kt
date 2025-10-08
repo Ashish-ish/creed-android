@@ -1,5 +1,8 @@
 package com.creed.data.remote.dto
 
+import com.creed.domain.models.Amenity
+import com.creed.domain.models.Arena
+import com.creed.domain.models.Sport
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
@@ -27,23 +30,37 @@ data class AddressDto(
 data class LatLngDto(val lat: Double, val lng: Double)
 
 @Serializable
+data class ArenaResponse(
+    val success: Boolean = false,
+    val data: ArenaDto?=null
+)
+
+@Serializable
 data class ArenaDto(
     val id: String,
     val name: String,
     val subtitle: String = "",
     val description: String = "",
-    val address: AddressDto,
-    val location: LatLngDto,
-    val images: List<String>
+    val address: String,
+    val location: LatLngDto?=null,
+    val images: List<String>?=null,
+    val imageUrl: String,
+    val rating: Float,
+    val reviewCount: Int,
+    val sports: List<SportDto>,
+    val amenities: List<Amenity>,
+    val nearbyArenas: List<ArenaDto>,
+    val priceRange: String
 )
 
 @Serializable
 data class SportDto(
     val id: String,
-    val arenaId: String,
+    val arenaId: String?=null,
     val name: String,
     val description: String = "",
-    val rules: String = ""
+    val rules: String = "",
+    val image: String =""
 )
 
 @Serializable

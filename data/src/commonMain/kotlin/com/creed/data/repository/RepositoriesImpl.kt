@@ -142,9 +142,12 @@ class ArenaRepositoryImpl(private val httpClient: HttpClient) : ArenaRepository 
         }.body()
         dtos.map { it.toDomain() }
     }
-    override suspend fun getArenaDetail(arenaId: String): Result<Arena> = runCatching {
-        val dto: ArenaDto = httpClient.get("/api/arenas/$arenaId").body()
-        dto.toDomain()
+    override suspend fun getArenaDetail(arenaId: String, lat: Double?, lng: Double?): Result<Arena?> = runCatching {
+        val dto: ArenaResponse = httpClient.get("/api/arenas/$arenaId") {
+            lat?.let { parameter("lat", it) }
+            lng?.let { parameter("lng", it) }
+        }.body()
+        dto.data?.toDomain()
     }
     override suspend fun getSports(arenaId: String): Result<List<Sport>> = runCatching {
         val dtos: List<SportDto> = httpClient.get("/api/arenas/$arenaId/sports").body()
