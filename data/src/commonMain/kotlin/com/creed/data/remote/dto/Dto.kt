@@ -182,7 +182,6 @@ data class PriceRangeDto(
 
 @Serializable
 data class AvailableSportDto(
-    val _id: String,
     val sportId: String,
     val sportName: String,
     val sportIcon: String,

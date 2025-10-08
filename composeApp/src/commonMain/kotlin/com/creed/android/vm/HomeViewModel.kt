@@ -12,6 +12,9 @@ import com.creed.android.ui.screens.home.SportChipUi
 import com.creed.android.ui.screens.home.SummaryState
 import com.creed.android.ui.screens.home.SummaryType
 import com.creed.android.ui.screens.home.UpcomingUi
+import com.creed.data.location.LocationPermissionStatus
+import com.creed.data.location.LocationService
+import com.creed.data.location.LocationState
 import com.creed.domain.models.*
 import com.creed.domain.repository.ArenaRepository
 import com.creed.domain.repository.UserRepository
@@ -26,14 +29,27 @@ import kotlin.time.ExperimentalTime
 
 class HomeViewModel(
     private val arenaRepository: ArenaRepository,
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
+    private val locationService: LocationService
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(HomeState())
     val state: StateFlow<HomeState> = _state.asStateFlow()
 
     init {
-        loadHomeData()
+        observeLocationState()
+    }
+
+    private fun observeLocationState() {
+        viewModelScope.launch {
+            locationService.getCurrentLocation()
+            locationService.locationState.collect {
+                if (it.permissionStatus == LocationPermissionStatus.GRANTED && it.currentLocation != null) {
+                    // You can use the current location to fetch location-based data if needed
+                    loadHomeData(it.currentLocation) // Load home data when location is available
+                }
+            }
+        }
     }
 
     fun onEvent(event: HomeEvent) {
@@ -50,7 +66,7 @@ class HomeViewModel(
         }
     }
 
-    private fun loadHomeData() {
+    private fun loadHomeData(latLong: LatLng? = null) {
         viewModelScope.launch {
             _state.value = _state.value.copy(isLoading = true, error = null)
 

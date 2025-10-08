@@ -1,16 +1,9 @@
 package com.creed.android.ui.screens
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -24,25 +17,27 @@ import com.creed.android.vm.SplashViewModel
 import org.koin.compose.koinInject
 
 @Composable
-fun SplashScreen(navController: Navigator) {
+fun SplashScreen(navigator: Navigator) {
     val viewModel: SplashViewModel = koinInject()
     val state by viewModel.state.collectAsState()
 
     // Handle navigation based on state
     LaunchedEffect(state) {
         when (state) {
-            is SplashState.NavigateToHome -> {
-                navController.navigate(Route.LocationPermission, true)
-            }
             is SplashState.NavigateToLogin -> {
-                navController.navigate(Route.Login, true)
+                navigator.navigate(Route.Login, clearBackStack = true)
             }
-            is SplashState.Loading -> {
-                // Stay on splash screen
+            is SplashState.NavigateToLocationPermission -> {
+                navigator.navigate(Route.LocationPermission, clearBackStack = true)
             }
+            is SplashState.NavigateToHome -> {
+                navigator.navigate(Route.MainScreen, clearBackStack = true)
+            }
+            else -> { /* Still loading */ }
         }
     }
 
+    // Splash UI with gradient background
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -53,26 +48,36 @@ fun SplashScreen(navController: Navigator) {
                         MaterialTheme.colorScheme.primaryContainer
                     )
                 )
-            )
+            ),
+        contentAlignment = Alignment.Center
     ) {
-        // Center loader - show when loading
-        if (state is SplashState.Loading) {
-            CircularProgressIndicator(
-                modifier = Modifier.align(Alignment.Center),
-                color = MaterialTheme.colorScheme.onPrimary
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            // App logo/title
+            Text(
+                text = "CREED",
+                fontSize = 48.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onPrimary,
+                modifier = Modifier.padding(bottom = 8.dp)
             )
-        }
 
-        // Creed text at bottom
-        Text(
-            text = "creed",
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .padding(bottom = 48.dp),
-            fontSize = 32.sp,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onPrimary,
-            letterSpacing = 2.sp
-        )
+            Text(
+                text = "Sports Ground Booking",
+                fontSize = 16.sp,
+                color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f),
+                modifier = Modifier.padding(bottom = 48.dp)
+            )
+
+            // Loading indicator
+            if (state is SplashState.Loading) {
+                CircularProgressIndicator(
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    modifier = Modifier.size(40.dp)
+                )
+            }
+        }
     }
 }

@@ -80,7 +80,6 @@ fun PriceRangeDto.toDomain() = ArenaPriceRange(
 )
 
 fun AvailableSportDto.toDomain() = AvailableSport(
-    id = _id,
     sportId = sportId,
     sportName = sportName,
     sportIcon = sportIcon,

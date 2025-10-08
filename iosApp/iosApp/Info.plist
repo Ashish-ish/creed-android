@@ -3,6 +3,12 @@
 <plist version="1.0">
 <dict>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
-	<true/>
+    <key>NSLocationWhenInUseUsageDescription</key>
+    <string>We need your location to find sports grounds near you and provide personalized recommendations.</string>
+
+    <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+    <string>We need your location to provide location-based sports ground recommendations.</string>
+
+    <true/>
 </dict>
 </plist>

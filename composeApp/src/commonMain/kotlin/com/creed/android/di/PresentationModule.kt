@@ -16,7 +16,7 @@ import org.koin.dsl.module
 val presentationModule = module {
     // ViewModels as regular factory instances (not Android ViewModels)
     factory { LoginViewModel(get()) }
-    factory { SplashViewModel(get()) }
+    factory { SplashViewModel(get(), get()) }
     factory { ProfileCompletionViewModel(get()) }
     factory { LocationPermissionViewModel(get()) }
     factory { ArenaDetailViewModel(get(), get()) }
@@ -25,5 +25,5 @@ val presentationModule = module {
     factory { BookingsViewModel(get()) }
     factory { ProfileViewModel(get(), get()) }
     factory { SearchViewModel(get()) }
-    factory { HomeViewModel(get(), get()) }
+    factory { HomeViewModel(get(), get(), get()) }
 }

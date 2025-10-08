@@ -6,6 +6,7 @@ import com.creed.domain.repository.*
 import com.creed.usecase.*
 import com.creed.data.otp.OtpDataSource
 import com.creed.data.payment.PaymentDataSource
+import com.creed.data.location.LocationService
 import org.koin.core.module.Module
 import org.koin.dsl.module
 
@@ -50,4 +51,5 @@ val commonModule: Module = module {
     factory { AuthenticationUseCase(get(), get(), get()) }
 
     factory { FetchSearchArenasUseCase(get()) }
+
 }

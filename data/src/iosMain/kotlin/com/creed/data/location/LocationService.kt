@@ -11,13 +11,13 @@ import platform.darwin.NSObject
 
 @OptIn(ExperimentalForeignApi::class)
 actual class LocationService {
-    
+
     private val _locationState = MutableStateFlow(LocationState())
     actual val locationState: StateFlow<LocationState> = _locationState.asStateFlow()
-    
+
     private val locationManager = CLLocationManager()
     private val delegate: LocationManagerDelegate
-    
+
     init {
         delegate = LocationManagerDelegate(
             onLocationUpdate = { location ->
@@ -40,12 +40,12 @@ actual class LocationService {
                 )
             }
         )
-        
+
         locationManager.delegate = delegate
         locationManager.desiredAccuracy = kCLLocationAccuracyBest
         locationManager.distanceFilter = kCLDistanceFilterNone
     }
-    
+
     actual fun checkPermissionStatus(): LocationPermissionStatus {
         val authStatus = CLLocationManager.authorizationStatus()
         return when (authStatus) {
@@ -57,10 +57,10 @@ actual class LocationService {
             else -> LocationPermissionStatus.NOT_DETERMINED
         }
     }
-    
+
     actual suspend fun requestPermission() {
         val currentStatus = checkPermissionStatus()
-        
+
         when (currentStatus) {
             LocationPermissionStatus.NOT_DETERMINED -> {
                 locationManager.requestWhenInUseAuthorization()
@@ -84,7 +84,7 @@ actual class LocationService {
             }
         }
     }
-    
+
     actual suspend fun getCurrentLocation() {
         val permissionStatus = checkPermissionStatus()
 
@@ -109,7 +109,7 @@ actual class LocationService {
             )
             return
         }
-        
+
         _locationState.value = _locationState.value.copy(
             isLoading = true,
             error = null

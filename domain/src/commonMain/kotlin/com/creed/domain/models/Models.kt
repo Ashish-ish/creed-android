@@ -226,7 +226,6 @@ data class ArenaPriceRange(
 
 @Serializable
 data class AvailableSport(
-    val id: String,
     val sportId: String,
     val sportName: String,
     val sportIcon: String,

@@ -16,6 +16,8 @@ import com.creed.android.navigation.Route
 import com.creed.android.vm.LoginViewModel
 import com.creed.android.vm.LoginState
 import com.creed.android.vm.LoginEffect
+import com.creed.data.location.LocationService
+import com.creed.data.location.LocationPermissionStatus
 import org.koin.compose.koinInject
 
 @Composable
@@ -23,16 +25,23 @@ fun LoginScreen(
     navigator: Navigator
 ) {
     val viewModel: LoginViewModel = koinInject()
+    val locationService: LocationService = koinInject()
     val state by viewModel.state.collectAsState()
 
     var phoneNumber by remember { mutableStateOf("") }
     var otp by remember { mutableStateOf("") }
 
-    // Handle state changes for navigation - proper way without effects
+    // Handle state changes for navigation - check location permission before navigating
     LaunchedEffect(state) {
         when (state) {
             is LoginState.UserExists -> {
-                navigator.navigate(Route.LocationPermission)
+                // Check if location permission is already granted
+                val permissionStatus = locationService.checkPermissionStatus()
+                if (permissionStatus == LocationPermissionStatus.GRANTED) {
+                    navigator.navigate(Route.MainScreen)
+                } else {
+                    navigator.navigate(Route.LocationPermission)
+                }
             }
             is LoginState.ProfileCompletionRequired -> {
                 navigator.navigate(Route.ProfileCompletion)

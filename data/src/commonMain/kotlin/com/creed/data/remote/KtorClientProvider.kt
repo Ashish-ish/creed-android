@@ -29,7 +29,7 @@ object KtorClientProvider {
                 })
             }
             install(Logging) {
-                level = LogLevel.HEADERS
+                level = LogLevel.ALL
             }
             install(DefaultRequest) {
                 url("http://10.0.2.2:3000/")
